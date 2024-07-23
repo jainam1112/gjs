@@ -1,0 +1,112 @@
+/* globals.css */
+
+body {
+  background-color: #f6e9d7;
+  font-family: Arial, sans-serif;
+}
+
+.home-container {
+  background-color: #f6e9d7;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.title {
+  color: #977040;
+}
+
+.custom-button {
+  background-color: #582626;
+  border-color: #582626;
+  color: white;
+}
+
+.custom-button:hover {
+  background-color: #451b1b;
+  border-color: #451b1b;
+  color: white;
+}
+
+.custom-secondary-button {
+  background-color: #977040;
+  border-color: #977040;
+  color: white;
+}
+
+.custom-secondary-button:hover {
+  background-color: #785d2c;
+  border-color: #785d2c;
+}
+
+.custom-button, .custom-secondary-button {
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+.custom-table th, .custom-table td {
+  color: #582626;
+}
+
+.custom-table thead th {
+  background-color: #977040;
+  color: white;
+}
+
+.custom-table tbody tr:hover {
+  background-color: #f6e9d7;
+}
+.btn-outline-primary {
+  color: #582626;
+  border-color: #582626;
+}
+
+.btn-outline-primary:hover {
+  background-color: #582626;
+  color: white;
+}
+
+.btn-outline-danger {
+  color: #582626;
+  border-color: #582626;
+}
+
+.btn-outline-danger:hover {
+  background-color: #582626;
+  color: white;
+}
+
+.modal-content {
+  background-color: #f6e9d7;
+  border-color: #977040;
+}
+.custom-table {
+  border: 1px solid #dee2e6;
+}
+
+.custom-pagination .page-item.active .page-link {
+  background-color: #977040;
+  border-color: #977040;
+  color: white;
+}
+
+.custom-pagination .page-link {
+  color: #977040;
+}
+
+.custom-pagination .page-link:hover {
+  background-color: #582626;
+  color: white;
+}
+
+.custom-input {
+  border-radius: 0.25rem;
+  border-color: #ced4da;
+}
+
+.custom-select {
+  border-radius: 0.25rem;
+  border-color: #ced4da;
+}
