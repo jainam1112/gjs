@@ -21,7 +21,13 @@ export default async function handler(req, res) {
     if (!family) {
       return res.status(404).json({ message: 'Family not found' });
     }
-console.log(family)
+
+    // Check if the email already exists
+    const existingMember = await Member.findOne({ email });
+    if (existingMember) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+
     // Create the new member
     const member = new Member({ name, phoneNumber, email, password, family: family._id });
     await member.save();

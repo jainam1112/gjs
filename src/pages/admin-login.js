@@ -13,14 +13,32 @@ const AdminLoginForm = () => {
     email: '',
     password: '',
   });
+  const [errors, setErrors] = useState({});
   const router = useRouter();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!validateEmail(formData.email)) {
+      newErrors.email = 'Invalid email address';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      return;
+    }
     try {
       const response = await axios.post('/api/auth/admin-login', formData);
       setCookie(null, 'userType', 'admin', { path: '/' });
@@ -28,7 +46,7 @@ const AdminLoginForm = () => {
       toast.success('Login successful');
       router.push('/admin/members');
     } catch (error) {
-      toast.error('Error logging in');
+      toast.error('Error: ' + (error.response.data.message ? error.response.data.message : 'Internal error'));
       console.error('Error logging in', error);
     }
   };
@@ -50,8 +68,12 @@ const AdminLoginForm = () => {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Enter your email"
+                    isInvalid={!!errors.email}
                     required
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.email}
+                  </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="password" className="mb-3">
                   <Form.Label>Password</Form.Label>

@@ -4,9 +4,20 @@ import { useRouter } from 'next/router';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '../styles/globals.css'; // Import the global CSS
 import { Card, Button, Form, Container, Row, Col } from 'react-bootstrap';
+import '../../styles/globals.css';
 
+// Server-side authentication middleware (assuming it's defined elsewhere)
+import { adminMiddleware } from "../../middleware/auth";
+
+export const getServerSideProps = async (ctx) => {
+  const authResult = await adminMiddleware(ctx);
+  if (authResult.redirect) return authResult;
+
+  return {
+    props: { ...authResult.props },
+  };
+};
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +29,7 @@ const RegisterForm = () => {
   });
 
   const [families, setFamilies] = useState([]);
+  const [errors, setErrors] = useState({});
   const router = useRouter();
 
   useEffect(() => {
@@ -37,12 +49,37 @@ const RegisterForm = () => {
     fetchFamilies();
   }, []);
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhoneNumber = (phoneNumber) => {
+    const phoneRegex = /^[6-9]\d{9}$/; // Indian phone number validation (10 digits starting with 6-9)
+    return phoneRegex.test(phoneNumber);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!validateEmail(formData.email)) {
+      newErrors.email = 'Invalid email address';
+    }
+    if (!validatePhoneNumber(formData.phoneNumber)) {
+      newErrors.phoneNumber = 'Invalid phone number. Must be 10 digits and start with 6-9.';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      return;
+    }
     try {
       await axios.post('/api/auth/register', formData);
       toast.success('Member registered successfully!');
@@ -62,7 +99,7 @@ const RegisterForm = () => {
             <Card.Body>
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2 className="title">Register a New Member</h2>
-                <Button className="custom-button" onClick={() => router.push('/newfamily')}>Add New Family</Button>
+                {/* <Button className="custom-button" onClick={() => router.push('/newfamily')}>Add New Family</Button> */}
               </div>
 
               <Form onSubmit={handleSubmit}>
@@ -74,8 +111,12 @@ const RegisterForm = () => {
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="Enter name"
+                    isInvalid={!!errors.name}
                     required
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.name}
+                  </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="phoneNumber" className="mb-3">
                   <Form.Label>Phone Number</Form.Label>
@@ -85,8 +126,12 @@ const RegisterForm = () => {
                     value={formData.phoneNumber}
                     onChange={handleChange}
                     placeholder="Enter phone number"
+                    isInvalid={!!errors.phoneNumber}
                     required
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.phoneNumber}
+                  </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="email" className="mb-3">
                   <Form.Label>Email</Form.Label>
@@ -96,8 +141,12 @@ const RegisterForm = () => {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Enter email"
+                    isInvalid={!!errors.email}
                     required
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.email}
+                  </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="password" className="mb-3">
                   <Form.Label>Password</Form.Label>
@@ -127,7 +176,7 @@ const RegisterForm = () => {
                   </Form.Control>
                 </Form.Group>
                 <Button type="submit" className="custom-button w-100">
-                   Register
+                  Register
                 </Button>
               </Form>
             </Card.Body>

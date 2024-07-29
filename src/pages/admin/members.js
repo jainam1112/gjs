@@ -1,13 +1,20 @@
-// pages/admin/members.js
-
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Table, Button, Modal, Form, Pagination, Container, Row, Col } from 'react-bootstrap';
-import { adminMiddleware } from '../../middleware/auth';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import '../../styles/globals.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  Table,
+  Button,
+  Modal,
+  Form,
+  Pagination,
+  Container,
+  Row,
+  Col,
+} from "react-bootstrap";
+import { adminMiddleware } from "../../middleware/auth";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "../../styles/globals.css";
 
 export const getServerSideProps = async (ctx) => {
   const authResult = await adminMiddleware(ctx);
@@ -22,21 +29,22 @@ const MembersPage = () => {
   const [members, setMembers] = useState([]);
   const [families, setFamilies] = useState([]);
   const [editMember, setEditMember] = useState({
-    _id: '',
-    name: '',
-    phoneNumber: '',
-    email: '',
-    family: '',
-    familyId: '',
-    familyName: '',
+    _id: "",
+    name: "",
+    phoneNumber: "",
+    email: "",
+    family: "",
+    familyId: "",
+    familyName: "",
+    password: "",
     deleted: false,
   });
   const [showModal, setShowModal] = useState(false);
   const [showDeleted, setShowDeleted] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [membersPerPage] = useState(5);
+  const [membersPerPage] = useState(10);
 
   useEffect(() => {
     fetchMembers();
@@ -45,33 +53,33 @@ const MembersPage = () => {
 
   const fetchMembers = async () => {
     try {
-      let endpoint = `/api/member/list?_page=${currentPage}&_limit=${membersPerPage}`;
+      let endpoint = `/api/member/list?page=${currentPage}&limit=${membersPerPage}`;
       if (searchQuery) {
         endpoint += `&q=${searchQuery}`;
       }
       if (sortBy) {
-        endpoint += `&_sort=${sortBy}`;
+        endpoint += `&sortBy=${sortBy}`;
       }
       if (showDeleted) {
-        endpoint += `&_deleted=true`;
+        endpoint += `&deleted=true`;
       }
 
       const response = await axios.get(endpoint);
-      const membersData = response.data.members.map(member => ({
+      const membersData = response.data.members.map((member) => ({
         ...member,
         familyId: member.family.familyId,
-        familyName: member.family.familyName
+        familyName: member.family.familyName,
       }));
       setMembers(membersData);
     } catch (error) {
-      console.error('Error fetching members:', error);
-      toast.error('Error fetching members.');
+      console.error("Error fetching members:", error);
+      toast.error("Error fetching members.");
     }
   };
 
   const fetchFamilies = async () => {
     try {
-      const response = await axios.get('/api/family/list');
+      const response = await axios.get("/api/family/list");
       setFamilies(response.data.families);
       if (response.data.families.length > 0) {
         setEditMember((prevEditMember) => ({
@@ -80,8 +88,8 @@ const MembersPage = () => {
         }));
       }
     } catch (error) {
-      console.error('Error fetching families:', error);
-      toast.error('Error fetching families.');
+      console.error("Error fetching families:", error);
+      toast.error("Error fetching families.");
     }
   };
 
@@ -93,45 +101,59 @@ const MembersPage = () => {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      editMember['memberId'] = editMember._id;
+      editMember["memberId"] = editMember._id;
       const response = await axios.put(`/api/member/edit`, editMember);
-      toast.success('Member updated successfully');
-      setMembers(prevMembers =>
-        prevMembers.map(member => (member._id === editMember._id ? response.data.member : member))
+      toast.success("Member updated successfully");
+      setMembers((prevMembers) =>
+        prevMembers.map((member) =>
+          member._id === editMember._id ? response.data.member : member
+        )
       );
       setShowModal(false);
     } catch (error) {
-      toast.error('Error updating member');
-      console.error('Error editing member:', error);
+      toast.error("Error updating member");
+      console.error("Error editing member:", error);
     }
   };
 
-  const handleDelete = async (memberId) => {
-    try {
-      await axios.patch(`/api/member/remove`, { memberId });
-      fetchMembers();
-    } catch (error) {
-      console.error('Error deleting member:', error);
-      toast.error('Error deleting member.');
+  const handleDelete = async (memberId, member) => {
+    if (
+      member.family.primaryMember === memberId &&
+      member.family.members.count !== 1
+    ) {
+      toast.error(
+        "Unable to delete primary User with family members registered in it."
+      );
+    } else {
+      try {
+        await axios.patch(`/api/member/remove`, { memberId });
+        fetchMembers();
+      } catch (error) {
+        console.error("Error deleting member:", error);
+        toast.error("Error deleting member.");
+      }
     }
   };
 
   const handleExport = async () => {
     try {
-      const response = await axios.get(`/api/admin/members/export${showDeleted ? '/deleted' : ''}`, {
-        responseType: 'blob',
-      });
+      const response = await axios.get(
+        `/api/member/export${showDeleted ? "/deleted" : ""}`,
+        {
+          responseType: "blob",
+        }
+      );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', 'members.csv');
+      link.setAttribute("download", "members.csv");
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
     } catch (error) {
-      console.error('Error exporting members:', error);
-      toast.error('Error exporting members.');
+      console.error("Error exporting members:", error);
+      toast.error("Error exporting members.");
     }
   };
 
@@ -141,7 +163,7 @@ const MembersPage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setEditMember(prevEditMember => ({
+    setEditMember((prevEditMember) => ({
       ...prevEditMember,
       [name]: value,
     }));
@@ -156,7 +178,8 @@ const MembersPage = () => {
   };
 
   const handleSortChange = (field) => {
-    setSortBy(field);
+    const newSortBy = sortBy === field ? `-${field}` : field; // Toggle sorting order
+    setSortBy(newSortBy);
   };
 
   const handlePageChange = (page) => {
@@ -167,18 +190,23 @@ const MembersPage = () => {
     <Container className="mt-5">
       <ToastContainer />
       <Row className="mb-4">
-      <h2 className="title text-center">Member List</h2>
-        <Col md={12} className="d-flex justify-content-between align-items-center">
-      
+        <h2 className="title text-center">Member List</h2>
+        <Col
+          md={12}
+          className="d-flex justify-content-between align-items-center"
+        >
           <div>
-            <Button onClick={handleExport} className="custom-button me-2">
+          <Button href="addMember" className="custom-button me-2 mb-0">
+              Add Member
+            </Button>
+            <Button onClick={handleExport} className="custom-button me-2 mb-0">
               Export Members
             </Button>
-            <Button 
-              variant={showDeleted ? 'danger' : 'outline-danger'} 
+            <Button
+              variant={showDeleted ? "danger" : "outline-danger"}
               onClick={() => setShowDeleted(!showDeleted)}
             >
-              {showDeleted ? 'Hide Deleted' : 'Show Deleted'}
+              {showDeleted ? "Hide Deleted" : "Show Deleted"}
             </Button>
           </div>
           <div className="d-flex align-items-center">
@@ -187,8 +215,8 @@ const MembersPage = () => {
               placeholder="Search members..."
               value={searchQuery}
               onChange={handleSearchChange}
-              className="me-2 custom-input"
-              style={{ maxWidth: '300px' }}
+              className="me-2 custom-input mb-0"
+              style={{ maxWidth: "300px" }}
             />
             <Button onClick={handleSearch} className="custom-button">
               Search
@@ -200,11 +228,21 @@ const MembersPage = () => {
       <Table striped bordered hover responsive className="custom-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Phone Number</th>
-            <th>Email</th>
-            <th>Family ID</th>
-            <th>Family Name</th>
+            <th onClick={() => handleSortChange('name')} style={{ cursor: 'pointer' }}>
+              Name {sortBy === 'name' ? '▲' : sortBy === '-name' ? '▼' : ''}
+            </th>
+            <th onClick={() => handleSortChange('phoneNumber')} style={{ cursor: 'pointer' }}>
+              Phone Number {sortBy === 'phoneNumber' ? '▲' : sortBy === '-phoneNumber' ? '▼' : ''}
+            </th>
+            <th onClick={() => handleSortChange('email')} style={{ cursor: 'pointer' }}>
+              Email {sortBy === 'email' ? '▲' : sortBy === '-email' ? '▼' : ''}
+            </th>
+            <th >
+              Family ID
+            </th>
+            <th>
+              Family Name 
+            </th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -218,10 +256,18 @@ const MembersPage = () => {
                 <td>{member.familyId}</td>
                 <td>{member.familyName}</td>
                 <td>
-                  <Button variant="info" onClick={() => handleEditModal(member)} className="me-2 custom-button">
+                  <Button
+                    variant="info"
+                    onClick={() => handleEditModal(member)}
+                    className="me-2 custom-button"
+                  >
                     Edit
                   </Button>
-                  <Button variant="danger" onClick={() => handleDelete(member._id)} className="custom-button">
+                  <Button
+                    variant="danger"
+                    onClick={() => handleDelete(member._id, member)}
+                    className="custom-button"
+                  >
                     Delete
                   </Button>
                 </td>
@@ -229,7 +275,9 @@ const MembersPage = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="6" className="text-center">No members found</td>
+              <td colSpan="6" className="text-center">
+                No members found
+              </td>
             </tr>
           )}
         </tbody>
@@ -237,14 +285,14 @@ const MembersPage = () => {
 
       {/* Pagination */}
       <Pagination className="justify-content-center mt-4 custom-pagination">
-        <Pagination.Prev 
-          onClick={() => handlePageChange(currentPage - 1)} 
-          disabled={currentPage === 1} 
+        <Pagination.Prev
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
         />
         <Pagination.Item active>{currentPage}</Pagination.Item>
-        <Pagination.Next 
-          onClick={() => handlePageChange(currentPage + 1)} 
-          disabled={members.length < membersPerPage} 
+        <Pagination.Next
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={members.length < membersPerPage}
         />
       </Pagination>
 
@@ -291,6 +339,17 @@ const MembersPage = () => {
                 className="custom-input"
               />
             </Form.Group>
+            <Form.Group className="mb-3" controlId="formPassword">
+              <Form.Label>Password</Form.Label>
+              <Form.Control
+                type="password"
+                placeholder="Enter new password (leave empty to keep current)"
+                name="password"
+                value={editMember.password}
+                onChange={handleChange}
+                className="custom-input"
+              />
+            </Form.Group>
             <Form.Group className="mb-3" controlId="formFamily">
               <Form.Label>Family</Form.Label>
               <Form.Control
@@ -299,6 +358,7 @@ const MembersPage = () => {
                 value={editMember.family}
                 onChange={handleChange}
                 required
+                disabled={editMember._id === editMember.family.primaryMember}
                 className="custom-select"
               >
                 {families.map((family) => (

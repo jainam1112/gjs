@@ -5,7 +5,7 @@ import Family from '../../../models/Family';
 export default async function handler(req, res) {
   if (req.method !== 'PUT') return res.status(405).end();
 
-  const { memberId, name, phoneNumber, email, familyId } = req.body;
+  const { memberId, name, phoneNumber, email, familyId, password } = req.body;
 
   await connectToDatabase();
 
@@ -41,6 +41,12 @@ export default async function handler(req, res) {
     member.name = name;
     member.phoneNumber = phoneNumber;
     member.email = email;
+
+    // Update password if provided
+    if (password) {
+      member.password = password;
+    }
+
     await member.save();
 
     res.status(200).json({ message: 'Member updated successfully', member });

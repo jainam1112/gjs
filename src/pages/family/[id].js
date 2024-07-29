@@ -12,8 +12,6 @@ export const getServerSideProps = async (ctx) => {
   const authResult = await authMiddleware(ctx);
   if (authResult.redirect) return authResult;
 
-  // Fetch other data here if needed
-
   return {
     props: { ...authResult.props },
   };
@@ -29,6 +27,7 @@ const FamilyMembersList = () => {
     phoneNumber: '',
     email: '',
   });
+  const [errors, setErrors] = useState({});
   const router = useRouter();
   const { id } = router.query;
 
@@ -49,6 +48,19 @@ const FamilyMembersList = () => {
     }
   }, [id]);
 
+  const validateEditMember = () => {
+    const newErrors = {};
+    if (!editMember.name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(editMember.phoneNumber)) {
+      newErrors.phoneNumber = 'Invalid phone number. Must be 10 digits and start with 6-9.';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleEditModal = (member) => {
     setEditMember(member);
     setShowModal(true);
@@ -56,6 +68,9 @@ const FamilyMembersList = () => {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+    if (!validateEditMember()) {
+      return;
+    }
     try {
       editMember['memberId'] = editMember._id;
       const response = await axios.put(`/api/member/edit`, editMember);
@@ -90,7 +105,7 @@ const FamilyMembersList = () => {
       <ToastContainer />
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2 className="title">Family Members List</h2>
-        <Button href="/addMember" className="custom-button">Add New Member</Button>
+        {family && (<Button href={"/addMember/" + family.familyId} className="custom-button">Add New Member</Button>)}
       </div>
       {family && (
         <div className="mb-3">
@@ -110,15 +125,15 @@ const FamilyMembersList = () => {
         </thead>
         <tbody>
           {familyMembers.map(member => (
-            <tr key={member._id}>
+            <tr key={member._id} className={family.primaryMember === member._id && 'primary'}>
               <td><strong>{family.familyId}</strong></td>
               <td>{member.name}</td>
               <td>{member.phoneNumber}</td>
               <td>{member.email}</td>
               <td>
                 <div className="btn-group" role="group">
-                  <Button variant="outline-primary" size="sm" onClick={() => handleEditModal(member)}>Edit</Button>
-                  <Button variant="outline-danger" size="sm" onClick={() => handleDelete(member._id)}>Delete</Button>
+                  <Button variant="outline-primary" disabled={family.primaryMember === member._id} size="sm" onClick={() => handleEditModal(member)}>Edit</Button>
+                  <Button variant="outline-danger" disabled={family.primaryMember === member._id} size="sm" onClick={() => handleDelete(member._id)}>Delete</Button>
                 </div>
               </td>
             </tr>
@@ -141,8 +156,12 @@ const FamilyMembersList = () => {
                 className="form-control"
                 value={editMember.name}
                 onChange={(e) => setEditMember({ ...editMember, name: e.target.value })}
+                isInvalid={!!errors.name}
                 required
               />
+              <div className="invalid-feedback">
+                {errors.name}
+              </div>
             </div>
             <div className="mb-3">
               <label htmlFor="edit-phoneNumber" className="form-label">Phone Number</label>
@@ -152,8 +171,12 @@ const FamilyMembersList = () => {
                 className="form-control"
                 value={editMember.phoneNumber}
                 onChange={(e) => setEditMember({ ...editMember, phoneNumber: e.target.value })}
+                isInvalid={!!errors.phoneNumber}
                 required
               />
+              <div className="invalid-feedback">
+                {errors.phoneNumber}
+              </div>
             </div>
             <div className="mb-3">
               <label htmlFor="edit-email" className="form-label">Email</label>
@@ -162,8 +185,7 @@ const FamilyMembersList = () => {
                 id="edit-email"
                 className="form-control"
                 value={editMember.email}
-                onChange={(e) => setEditMember({ ...editMember, email: e.target.value })}
-                required
+                readOnly
               />
             </div>
             <Button variant="primary" type="submit">Save Changes</Button>

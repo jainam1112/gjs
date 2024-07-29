@@ -13,14 +13,32 @@ const LoginForm = () => {
     loginIdentifier: '',
     password: '',
   });
+  const [errors, setErrors] = useState({});
   const router = useRouter();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!validateEmail(formData.loginIdentifier)) {
+      newErrors.loginIdentifier = 'Invalid email address';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      return;
+    }
     try {
       const response = await axios.post('/api/auth/login', formData);
       setCookie(null, 'userType', 'member', { path: '/' });
@@ -29,7 +47,7 @@ const LoginForm = () => {
       const familyId = response.data.familyId;
       router.push('/family/' + familyId); // Adjust this as needed for member redirection
     } catch (error) {
-      toast.error('Error logging in');
+      toast.error('Error: ' + error.response.data.message);
       console.error('Error logging in', error);
     }
   };
@@ -50,9 +68,13 @@ const LoginForm = () => {
                     name="loginIdentifier"
                     value={formData.loginIdentifier}
                     onChange={handleChange}
-                    placeholder="Enter your email or phone number"
+                    placeholder="Enter your email"
+                    isInvalid={!!errors.loginIdentifier}
                     required
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.loginIdentifier}
+                  </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="password" className="mb-3">
                   <Form.Label>Password</Form.Label>

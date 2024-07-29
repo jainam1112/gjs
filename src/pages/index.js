@@ -7,28 +7,31 @@ import '../styles/globals.css'; // Custom CSS for additional styles
 const Home = () => {
   return (
     <div className="home-container">
-      <Container className="mt-5">
-        <Row>
-          <Col>
-            <h1 className="title">Welcome to the Gitanjali Jain Sangh Family Management App</h1>
-          </Col>
-          <Col className="text-right">
-            <Link href="/admin-login" passHref>
-              <Button variant="primary" className="custom-button">Admin Login</Button>
-            </Link>
-          </Col>
-        </Row>
-        <Row className="mt-3">
-          <Col>
-            <Link href="/register" passHref>
-              <Button variant="primary" className="custom-button mr-2">Register a New Family</Button>
-            </Link>
-            <Link href="/login" passHref>
-              <Button variant="secondary" className="custom-secondary-button">Login to Existing Family</Button>
-            </Link>
-          </Col>
-        </Row>
-      </Container>
+      <div className="content-wrapper">
+        <div className="banner-image">
+          <img src="/banner.jpg" alt="Banner" className="banner-img" />
+        </div>
+        <div className="info-panel">
+          <Container className="d-flex flex-column justify-content-center align-items-center">
+            <Row>
+              <Col className="text-center">
+                <h1 className="title">Welcome to the Gitanjali Jain Sangh Family Management App</h1>
+                <div className="button-group">
+                  <Link href="/admin-login" passHref>
+                    <Button variant="primary" className="custom-button">Admin Login</Button>
+                  </Link>
+                  <Link href="/register" passHref>
+                    <Button variant="primary" className="custom-button me-2">Register a New Family</Button>
+                  </Link>
+                  <Link href="/login" passHref>
+                    <Button variant="secondary" className="custom-secondary-button">Login to Existing Family</Button>
+                  </Link>
+                </div>
+              </Col>
+            </Row>
+          </Container>
+        </div>
+      </div>
     </div>
   );
 };
