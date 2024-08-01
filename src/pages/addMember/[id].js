@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { ToastContainer, toast } from 'react-toastify';
-import { authMiddleware } from '../../middleware/auth';
+import { authMiddleware } from "../../middleware/auth"; // Adjust path if needed
+import { logoutUser } from "../../middleware/logout"
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../styles/globals.css'; // Import the global CSS
@@ -13,50 +14,33 @@ export const getServerSideProps = async (ctx) => {
   if (authResult.redirect) return authResult;
 
   return {
-    props: { ...authResult.props },
+    props: { ...authResult.props }, // Pass additional props if needed
   };
 };
 
 const RegisterForm = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const { familyName, id } = router.query;
   const [formData, setFormData] = useState({
     name: '',
     phoneNumber: '',
-    email: '',
+    dateOfBirth: '',
+    email:'',
+    gender: '',
     password: '',
-    familyId: id || '',
+    familyId: id,
   });
 
   const [errors, setErrors] = useState({});
   const [families, setFamilies] = useState([]);
 
-  // Fetch families if needed and commented code is reactivated
-  // useEffect(() => {
-  //   const fetchFamilies = async () => {
-  //     try {
-  //       const response = await axios.get('/api/family/list');
-  //       setFamilies(response.data.families);
-  //       if (response.data.families.length > 0) {
-  //         setFormData((prevData) => ({ ...prevData, familyId: response.data.families[0].familyId }));
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching families:', error);
-  //       toast.error('Error fetching families.');
-  //     }
-  //   };
-
-  //   fetchFamilies();
-  // }, []);
-
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   const validatePhoneNumber = (phoneNumber) => {
     const phoneRegex = /^[6-9]\d{9}$/; // Indian phone number validation
     return phoneRegex.test(phoneNumber);
+  };
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
 
   const validateForm = () => {
@@ -64,14 +48,20 @@ const RegisterForm = () => {
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
     }
-    if (!validateEmail(formData.email)) {
-      newErrors.email = 'Invalid email address';
-    }
     if (!validatePhoneNumber(formData.phoneNumber)) {
       newErrors.phoneNumber = 'Invalid phone number. Must be 10 digits and start with 6-9.';
     }
     if (!formData.password.trim()) {
       newErrors.password = 'Password is required';
+    }
+    if (!validateEmail(formData.email)) {
+      newErrors.phoneNumber = 'Invalid email.';
+    }
+    if (!formData.dateOfBirth.trim()) {
+      newErrors.dateOfBirth = 'Date of birth is required';
+    }
+    if (!formData.gender.trim()) {
+      newErrors.gender = 'Gender is required';
     }
     if (!formData.familyId) {
       newErrors.familyId = 'Family selection is required';
@@ -99,21 +89,28 @@ const RegisterForm = () => {
     }
   };
 
+  const handleLogout = () => {
+    logoutUser(); // Call the logout function to clear cookies
+    router.push('/login'); // Redirect to the login page
+  };
+
   return (
     <Container className="d-flex justify-content-center align-items-center min-vh-100">
       <ToastContainer />
       <Row className="w-100">
         <Col md={{ span: 6, offset: 3 }}>
+          <div className="d-flex justify-content-between align-items-center mb-1 mt-3">
+            <h2 className="title mb-1">Register a New Member</h2>
+            <Button className="custom-button" onClick={handleLogout}>
+              Logout
+            </Button>
+          </div>
+          <h4 className="sub-title mt-0 mb-3"><small>{familyName && "Family Name: "+ familyName}</small></h4>
           <Card className="shadow-lg">
             <Card.Body>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h2 className="title">Register a New Member</h2>
-                {/* <Button className="custom-button" onClick={() => router.push('/newfamily')}>Add New Family</Button> */}
-              </div>
-
               <Form onSubmit={handleSubmit}>
                 <Form.Group controlId="name" className="mb-3">
-                  <Form.Label>Name</Form.Label>
+                  <Form.Label>First Name</Form.Label>
                   <Form.Control
                     type="text"
                     name="name"
@@ -157,6 +154,39 @@ const RegisterForm = () => {
                     {errors.email}
                   </Form.Control.Feedback>
                 </Form.Group>
+                <Form.Group controlId="dateOfBirth" className="mb-3">
+                  <Form.Label>Date of Birth</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="dateOfBirth"
+                    value={formData.dateOfBirth}
+                    onChange={handleChange}
+                    isInvalid={!!errors.dateOfBirth}
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.dateOfBirth}
+                  </Form.Control.Feedback>
+                </Form.Group>
+                <Form.Group controlId="gender" className="mb-3">
+                  <Form.Label>Gender</Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleChange}
+                    isInvalid={!!errors.gender}
+                    required
+                  >
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </Form.Control>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.gender}
+                  </Form.Control.Feedback>
+                </Form.Group>
                 <Form.Group controlId="password" className="mb-3">
                   <Form.Label>Password</Form.Label>
                   <Form.Control
@@ -172,27 +202,6 @@ const RegisterForm = () => {
                     {errors.password}
                   </Form.Control.Feedback>
                 </Form.Group>
-                {/* Commented out familyId selection */}
-                {/* <Form.Group controlId="familyId" className="mb-3">
-                  <Form.Label>Select Family</Form.Label>
-                  <Form.Control
-                    as="select"
-                    name="familyId"
-                    value={formData.familyId}
-                    onChange={handleChange}
-                    isInvalid={!!errors.familyId}
-                    required
-                  >
-                    {families.map(family => (
-                      <option key={family.familyId} value={family.familyId}>
-                        {family.familyName} - {family.familyId}
-                      </option>
-                    ))}
-                  </Form.Control>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.familyId}
-                  </Form.Control.Feedback>
-                </Form.Group> */}
                 <Button type="submit" className="custom-button w-100">
                   Register
                 </Button>

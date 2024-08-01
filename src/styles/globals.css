@@ -10,12 +10,15 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
 }
 
 .title {
   color: #977040;
+}
+.sub-title{
+  color: #582626;
 }
 
 .custom-button {
@@ -141,11 +144,36 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f8f9fa; /* Optional: add a background color */
+  background-color: #582626; /* Optional: add a background color */
   padding: 20px;
 }
 
 .title {
   font-size: 2rem;
   margin-bottom: 20px;
+}
+.header-panel {
+  background-color: #977040; /* Dark background color */
+  color: #fff; /* White text color */
+  border-bottom: 2px solid #582626; /* Border color for the bottom */
+  width:100%
+}
+
+.header-title h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.header-actions .btn {
+  color: #fff; /* White text color */
+  border: 1px solid #fff; /* White border */
+}
+
+.header-actions .btn:hover {
+  background-color: #fff; /* Darker background on hover */
+  color: #977040;
+  border-color:#977040 ;
+}
+.logo-img{
+  max-height: 80px;
 }

@@ -36,9 +36,7 @@ const AdminLoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) {
-      return;
-    }
+  
     try {
       const response = await axios.post('/api/auth/admin-login', formData);
       setCookie(null, 'userType', 'admin', { path: '/' });
@@ -61,14 +59,13 @@ const AdminLoginForm = () => {
               <Card.Title className="text-center title">Admin Login</Card.Title>
               <Form onSubmit={handleSubmit}>
                 <Form.Group controlId="email" className="mb-3">
-                  <Form.Label>Email</Form.Label>
+                  <Form.Label>Username</Form.Label>
                   <Form.Control
-                    type="email"
                     name="email"
+                    type="text"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="Enter your email"
-                    isInvalid={!!errors.email}
+                    placeholder="Enter your username"
                     required
                   />
                   <Form.Control.Feedback type="invalid">

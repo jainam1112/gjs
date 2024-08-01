@@ -1,27 +1,22 @@
 import connectToDatabase from '../../../lib/mongodb';
 import Member from '../../../models/Member';
-import Family from '../../../models/Family'; // Ensure Family model is imported
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { loginIdentifier, password } = req.body;
+  const { phoneNumber, password } = req.body;
 
   await connectToDatabase();
 
   try {
-    // Find member by email or phone number
-    const member = await Member.findOne({
-      $or: [
-        { email: loginIdentifier },
-        { phoneNumber: loginIdentifier }
-      ]
-    }).populate('family'); // Ensure the 'family' field is populated
-
+    // Find member by phone number
+    const member = await Member.findOne({ phoneNumber }).populate('family').exec();
+    console.log(member, 'member');
     if (!member || member.deleted) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    // Check password
     const isMatch = await member.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Wrong Password' });

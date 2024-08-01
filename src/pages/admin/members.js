@@ -15,6 +15,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../styles/globals.css";
+import { logoutUser } from "../../middleware/logout";
+import { FaUnlockAlt, FaLock } from 'react-icons/fa'; // Import icons for unlock and lock
 
 export const getServerSideProps = async (ctx) => {
   const authResult = await adminMiddleware(ctx);
@@ -33,6 +35,8 @@ const MembersPage = () => {
     name: "",
     phoneNumber: "",
     email: "",
+    dateOfBirth: '',
+    gender: '',
     family: "",
     familyId: "",
     familyName: "",
@@ -45,6 +49,7 @@ const MembersPage = () => {
   const [sortBy, setSortBy] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [membersPerPage] = useState(10);
+  const [isPasswordUnlocked, setIsPasswordUnlocked] = useState(false); // State to manage password input unlock
 
   useEffect(() => {
     fetchMembers();
@@ -101,14 +106,14 @@ const MembersPage = () => {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      editMember["memberId"] = editMember._id;
-      const response = await axios.put(`/api/member/edit`, editMember);
+      const updatedMember = { ...editMember };
+      if (!isPasswordUnlocked) {
+        delete updatedMember.password; // Remove password if not unlocked
+      }
+      updatedMember["memberId"] = editMember._id;
+      const response = await axios.put(`/api/member/edit`, updatedMember);
       toast.success("Member updated successfully");
-      setMembers((prevMembers) =>
-        prevMembers.map((member) =>
-          member._id === editMember._id ? response.data.member : member
-        )
-      );
+      fetchMembers();
       setShowModal(false);
     } catch (error) {
       toast.error("Error updating member");
@@ -186,6 +191,15 @@ const MembersPage = () => {
     setCurrentPage(page);
   };
 
+  const handleUnlockPassword = () => {
+    setIsPasswordUnlocked(!isPasswordUnlocked);
+  };
+
+  const handleLogout = () => {
+    logoutUser(); // Call the logout function to clear cookies
+    router.push('/admin-login'); // Redirect to the login page
+  };
+
   return (
     <Container className="mt-5">
       <ToastContainer />
@@ -196,7 +210,7 @@ const MembersPage = () => {
           className="d-flex justify-content-between align-items-center"
         >
           <div>
-          <Button href="addMember" className="custom-button me-2 mb-0">
+            <Button href="addMember" className="custom-button me-2 mb-0">
               Add Member
             </Button>
             <Button onClick={handleExport} className="custom-button me-2 mb-0">
@@ -218,18 +232,21 @@ const MembersPage = () => {
               className="me-2 custom-input mb-0"
               style={{ maxWidth: "300px" }}
             />
-            <Button onClick={handleSearch} className="custom-button">
+            <Button onClick={handleSearch} className="custom-button mb-0">
               Search
+            </Button>
+            <Button className="custom-button mb-0" onClick={handleLogout}>
+              Logout
             </Button>
           </div>
         </Col>
       </Row>
-
+     
       <Table striped bordered hover responsive className="custom-table">
         <thead>
           <tr>
             <th onClick={() => handleSortChange('name')} style={{ cursor: 'pointer' }}>
-              Name {sortBy === 'name' ? '▲' : sortBy === '-name' ? '▼' : ''}
+              First Name {sortBy === 'name' ? '▲' : sortBy === '-name' ? '▼' : ''}
             </th>
             <th onClick={() => handleSortChange('phoneNumber')} style={{ cursor: 'pointer' }}>
               Phone Number {sortBy === 'phoneNumber' ? '▲' : sortBy === '-phoneNumber' ? '▼' : ''}
@@ -237,11 +254,13 @@ const MembersPage = () => {
             <th onClick={() => handleSortChange('email')} style={{ cursor: 'pointer' }}>
               Email {sortBy === 'email' ? '▲' : sortBy === '-email' ? '▼' : ''}
             </th>
+            <th>Date of Birth</th>
+            <th>Gender</th>
             <th >
               Family ID
             </th>
-            <th>
-              Family Name 
+            <th onClick={() => handleSortChange('familyName')} style={{ cursor: 'pointer' }}>
+              Family Name {sortBy === 'familyName' ? '▲' : sortBy === '-familyName' ? '▼' : ''}
             </th>
             <th>Actions</th>
           </tr>
@@ -253,8 +272,10 @@ const MembersPage = () => {
                 <td>{member.name}</td>
                 <td>{member.phoneNumber}</td>
                 <td>{member.email}</td>
+                <td>{new Date(member.dateOfBirth).toLocaleDateString()}</td>
+                <td>{member.gender}</td>
                 <td>{member.familyId}</td>
-                <td>{member.familyName}</td>
+                <td>{member.family.familyName}</td>
                 <td>
                   <Button
                     variant="info"
@@ -275,7 +296,7 @@ const MembersPage = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="6" className="text-center">
+              <td colSpan="8" className="text-center">
                 No members found
               </td>
             </tr>
@@ -304,7 +325,7 @@ const MembersPage = () => {
         <Modal.Body>
           <Form onSubmit={handleEditSubmit}>
             <Form.Group className="mb-3" controlId="formName">
-              <Form.Label>Name</Form.Label>
+              <Form.Label>First Name</Form.Label>
               <Form.Control
                 type="text"
                 placeholder="Enter name"
@@ -339,16 +360,50 @@ const MembersPage = () => {
                 className="custom-input"
               />
             </Form.Group>
+            <Form.Group controlId="dateOfBirth" className="mb-3">
+              <Form.Label>Date of Birth</Form.Label>
+              <Form.Control
+                type="date"
+                name="dateOfBirth"
+                value={editMember.dateOfBirth ? new Date(editMember.dateOfBirth).toISOString().split('T')[0] : ''}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="gender" className="mb-3">
+              <Form.Label>Gender</Form.Label>
+              <Form.Control
+                as="select"
+                name="gender"
+                value={editMember.gender}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </Form.Control>
+            </Form.Group>
             <Form.Group className="mb-3" controlId="formPassword">
               <Form.Label>Password</Form.Label>
-              <Form.Control
-                type="password"
-                placeholder="Enter new password (leave empty to keep current)"
-                name="password"
-                value={editMember.password}
-                onChange={handleChange}
-                className="custom-input"
-              />
+              <div className="d-flex align-items-center">
+                <Form.Control
+                  type="password"
+                  placeholder="Enter new password (leave empty to keep current)"
+                  name="password"
+                  value={editMember.password}
+                  onChange={handleChange}
+                  className="custom-input me-2"
+                  disabled={!isPasswordUnlocked} // Disable input based on state
+                />
+                <Button
+                  variant={isPasswordUnlocked ? "success" : "outline-secondary"}
+                  onClick={handleUnlockPassword}
+                >
+                  {isPasswordUnlocked ? <FaLock /> : <FaUnlockAlt />}
+                </Button>
+              </div>
             </Form.Group>
             <Form.Group className="mb-3" controlId="formFamily">
               <Form.Label>Family</Form.Label>
@@ -358,7 +413,6 @@ const MembersPage = () => {
                 value={editMember.family}
                 onChange={handleChange}
                 required
-                disabled={editMember._id === editMember.family.primaryMember}
                 className="custom-select"
               >
                 {families.map((family) => (
@@ -379,3 +433,4 @@ const MembersPage = () => {
 };
 
 export default MembersPage;
+

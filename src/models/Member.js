@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
-
+import bcrypt from 'bcryptjs';
+import Family from '../models/Family';
 const MemberSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -9,11 +9,11 @@ const MemberSchema = new mongoose.Schema({
   phoneNumber: {
     type: String,
     required: true,
+    unique: true,
   },
   email: {
     type: String,
     required: true,
-    unique: true,
   },
   password: {
     type: String,
@@ -21,7 +21,14 @@ const MemberSchema = new mongoose.Schema({
   },
   family: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Family'
+    ref: 'Family',
+  },
+  dateOfBirth: {
+    type: Date,
+  },
+  gender: {
+    type: String,
+    enum: ['Male', 'Female', 'Other'], // Optional: restrict gender to specific values
   },
   deleted: {
     type: Boolean,
@@ -45,5 +52,6 @@ MemberSchema.pre('save', async function(next) {
 MemberSchema.methods.comparePassword = function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
+
 
 export default mongoose.models.Member || mongoose.model('Member', MemberSchema);

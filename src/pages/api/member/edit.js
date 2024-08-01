@@ -1,11 +1,11 @@
 import connectToDatabase from '../../../lib/mongodb';
 import Member from '../../../models/Member';
 import Family from '../../../models/Family';
-
+import bcrypt from 'bcryptjs';
 export default async function handler(req, res) {
   if (req.method !== 'PUT') return res.status(405).end();
 
-  const { memberId, name, phoneNumber, email, familyId, password } = req.body;
+  const { memberId, name, phoneNumber, email, familyId, password, dateOfBirth, gender } = req.body;
 
   await connectToDatabase();
 
@@ -41,10 +41,13 @@ export default async function handler(req, res) {
     member.name = name;
     member.phoneNumber = phoneNumber;
     member.email = email;
+    member.dateOfBirth = dateOfBirth;
+    member.gender = gender;
 
     // Update password if provided
     if (password) {
-      member.password = password;
+      const salt = await bcrypt.genSalt(10);
+      member.password = await bcrypt.hash(password, salt);
     }
 
     await member.save();

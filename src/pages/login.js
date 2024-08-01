@@ -10,7 +10,7 @@ import { Card, Button, Form, Container, Row, Col } from 'react-bootstrap';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
-    loginIdentifier: '',
+    phoneNumber: '',
     password: '',
   });
   const [errors, setErrors] = useState({});
@@ -20,15 +20,15 @@ const LoginForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  const validatePhoneNumber = (phoneNumber) => {
+    const phoneRegex = /^[0-9]{10}$/; // Adjust this regex based on your phone number format requirements
+    return phoneRegex.test(phoneNumber);
   };
 
   const validateForm = () => {
     const newErrors = {};
-    if (!validateEmail(formData.loginIdentifier)) {
-      newErrors.loginIdentifier = 'Invalid email address';
+    if (!validatePhoneNumber(formData.phoneNumber)) {
+      newErrors.phoneNumber = 'Invalid phone number';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -47,7 +47,7 @@ const LoginForm = () => {
       const familyId = response.data.familyId;
       router.push('/family/' + familyId); // Adjust this as needed for member redirection
     } catch (error) {
-      toast.error('Error: ' + error.response.data.message);
+      toast.error('Error: ' + (error.response?.data?.message || 'Login failed'));
       console.error('Error logging in', error);
     }
   };
@@ -61,19 +61,19 @@ const LoginForm = () => {
             <Card.Body>
               <Card.Title className="text-center title">Login</Card.Title>
               <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="loginIdentifier" className="mb-3">
-                  <Form.Label>Email or Phone</Form.Label>
+                <Form.Group controlId="phoneNumber" className="mb-3">
+                  <Form.Label>Phone Number</Form.Label>
                   <Form.Control
                     type="text"
-                    name="loginIdentifier"
-                    value={formData.loginIdentifier}
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
                     onChange={handleChange}
-                    placeholder="Enter your email"
-                    isInvalid={!!errors.loginIdentifier}
+                    placeholder="Enter your phone number"
+                    isInvalid={!!errors.phoneNumber}
                     required
                   />
                   <Form.Control.Feedback type="invalid">
-                    {errors.loginIdentifier}
+                    {errors.phoneNumber}
                   </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="password" className="mb-3">

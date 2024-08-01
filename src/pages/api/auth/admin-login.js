@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     
     const isMatch = await admin.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Wrong Password' });
     }
 
     res.status(200).json({ message: 'Login successful', userId: admin._id });

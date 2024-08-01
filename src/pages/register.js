@@ -13,7 +13,9 @@ const RegisterFamilyAndMemberForm = () => {
     name: '',
     phoneNumber: '',
     email: '',
-    password: ''
+    password: '',
+    dateOfBirth: '',
+    gender: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -44,6 +46,14 @@ const RegisterFamilyAndMemberForm = () => {
       newErrors.phoneNumber = 'Invalid phone number. It should be a 10-digit Indian phone number starting with 6-9';
     }
 
+    if (!formData.dateOfBirth) {
+      newErrors.dateOfBirth = 'Date of birth is required';
+    }
+
+    if (!formData.gender) {
+      newErrors.gender = 'Gender is required';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -72,13 +82,12 @@ const RegisterFamilyAndMemberForm = () => {
         <Col md={{ span: 6, offset: 3 }}>
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h2 className="title">Register New Family</h2>
-            {/* <Button className="custom-button" onClick={() => router.push('/register')}>Add New Family</Button> */}
           </div>
           <Card className="shadow-lg">
             <Card.Body>
               <Form onSubmit={handleSubmit}>
                 <Form.Group controlId="familyName" className="mb-3">
-                  <Form.Label>Family Name</Form.Label>
+                  <Form.Label>Family Name (Surname)</Form.Label>
                   <Form.Control
                     type="text"
                     name="familyName"
@@ -89,7 +98,7 @@ const RegisterFamilyAndMemberForm = () => {
                   />
                 </Form.Group>
                 <Form.Group controlId="name" className="mb-3">
-                  <Form.Label>Primary Member Name</Form.Label>
+                  <Form.Label>Primary Member First Name</Form.Label>
                   <Form.Control
                     type="text"
                     name="name"
@@ -139,6 +148,31 @@ const RegisterFamilyAndMemberForm = () => {
                     placeholder="Enter primary member password"
                     required
                   />
+                </Form.Group>
+                <Form.Group controlId="dateOfBirth" className="mb-3">
+                  <Form.Label>Date of Birth</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="dateOfBirth"
+                    value={formData.dateOfBirth}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+                <Form.Group controlId="gender" className="mb-3">
+                  <Form.Label>Gender</Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </Form.Control>
                 </Form.Group>
                 <Button type="submit" className="custom-button w-100">Register</Button>
               </Form>

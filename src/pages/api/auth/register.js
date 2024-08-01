@@ -5,7 +5,7 @@ import Family from '../../../models/Family';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { name, phoneNumber, email, password, familyId } = req.body;
+  const { name, phoneNumber, email, password, dateOfBirth, gender, familyId } = req.body;
 
   await connectToDatabase();
 
@@ -22,14 +22,14 @@ export default async function handler(req, res) {
       return res.status(404).json({ message: 'Family not found' });
     }
 
-    // Check if the email already exists
-    const existingMember = await Member.findOne({ email });
+    // Check if the phone number already exists
+    const existingMember = await Member.findOne({ phoneNumber });
     if (existingMember) {
-      return res.status(400).json({ message: 'Email already registered' });
+      return res.status(400).json({ message: 'Phone number already registered' });
     }
 
     // Create the new member
-    const member = new Member({ name, phoneNumber, email, password, family: family._id });
+    const member = new Member({ name, phoneNumber, email, password, dateOfBirth, gender, family: family._id });
     await member.save();
 
     // Add the member to the family's members list

@@ -6,7 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Card, Button, Form, Container, Row, Col } from 'react-bootstrap';
 import '../../styles/globals.css';
-
+import { logoutUser } from "../../middleware/logout"
 // Server-side authentication middleware (assuming it's defined elsewhere)
 import { adminMiddleware } from "../../middleware/auth";
 
@@ -24,7 +24,9 @@ const RegisterForm = () => {
     name: '',
     phoneNumber: '',
     email: '',
-    password: '',
+    password: '',    
+    dateOfBirth: '',
+    gender: '',
     familyId: '',
   });
 
@@ -54,18 +56,34 @@ const RegisterForm = () => {
     return emailRegex.test(email);
   };
 
+
   const validatePhoneNumber = (phoneNumber) => {
-    const phoneRegex = /^[6-9]\d{9}$/; // Indian phone number validation (10 digits starting with 6-9)
+    const phoneRegex = /^[6-9]\d{9}$/; // Indian phone number validation
     return phoneRegex.test(phoneNumber);
   };
 
   const validateForm = () => {
     const newErrors = {};
-    if (!validateEmail(formData.email)) {
-      newErrors.email = 'Invalid email address';
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
     }
     if (!validatePhoneNumber(formData.phoneNumber)) {
       newErrors.phoneNumber = 'Invalid phone number. Must be 10 digits and start with 6-9.';
+    }
+    if (!validateEmail(formData.email)) {
+      newErrors.phoneNumber = 'Invalid email.';
+    }
+    if (!formData.password.trim()) {
+      newErrors.password = 'Password is required';
+    }
+    if (!formData.dateOfBirth.trim()) {
+      newErrors.dateOfBirth = 'Date of birth is required';
+    }
+    if (!formData.gender.trim()) {
+      newErrors.gender = 'Gender is required';
+    }
+    if (!formData.familyId) {
+      newErrors.familyId = 'Family selection is required';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -74,7 +92,10 @@ const RegisterForm = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
+  const handleLogout = () => {
+    logoutUser(); // Call the logout function to clear cookies
+    router.push('/admin-login'); // Redirect to the login page
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
@@ -83,7 +104,7 @@ const RegisterForm = () => {
     try {
       await axios.post('/api/auth/register', formData);
       toast.success('Member registered successfully!');
-      router.push(`/family/${formData.familyId}`);
+      router.push(`/admin/members`);
     } catch (error) {
       console.error('Error registering', error);
       toast.error('Error registering member.');
@@ -99,12 +120,14 @@ const RegisterForm = () => {
             <Card.Body>
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2 className="title">Register a New Member</h2>
-                {/* <Button className="custom-button" onClick={() => router.push('/newfamily')}>Add New Family</Button> */}
+                <Button className="custom-button mb-0" onClick={handleLogout}>
+              Logout
+            </Button>
               </div>
 
               <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="name" className="mb-3">
-                  <Form.Label>Name</Form.Label>
+              <Form.Group controlId="name" className="mb-3">
+                  <Form.Label>First Name</Form.Label>
                   <Form.Control
                     type="text"
                     name="name"
@@ -148,6 +171,39 @@ const RegisterForm = () => {
                     {errors.email}
                   </Form.Control.Feedback>
                 </Form.Group>
+                <Form.Group controlId="dateOfBirth" className="mb-3">
+                  <Form.Label>Date of Birth</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="dateOfBirth"
+                    value={formData.dateOfBirth}
+                    onChange={handleChange}
+                    isInvalid={!!errors.dateOfBirth}
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.dateOfBirth}
+                  </Form.Control.Feedback>
+                </Form.Group>
+                <Form.Group controlId="gender" className="mb-3">
+                  <Form.Label>Gender</Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleChange}
+                    isInvalid={!!errors.gender}
+                    required
+                  >
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </Form.Control>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.gender}
+                  </Form.Control.Feedback>
+                </Form.Group>
                 <Form.Group controlId="password" className="mb-3">
                   <Form.Label>Password</Form.Label>
                   <Form.Control
@@ -156,8 +212,12 @@ const RegisterForm = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Enter password"
+                    isInvalid={!!errors.password}
                     required
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.password}
+                  </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="familyId" className="mb-3">
                   <Form.Label>Select Family</Form.Label>

@@ -5,7 +5,7 @@ import Member from '../../../models/Member';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { familyName, name, phoneNumber, email, password } = req.body;
+  const { familyName, name, phoneNumber, email, password, dateOfBirth, gender } = req.body;
 
   await connectToDatabase();
 
@@ -23,13 +23,21 @@ export default async function handler(req, res) {
       }
     }
 
+    // Check if the phone number already exists
+    const existingMember = await Member.findOne({ phoneNumber });
+    if (existingMember) {
+      return res.status(400).json({ message: 'Phone number already registered' });
+    }
+
     // Create the primary member
     const primaryMember = new Member({
       name,
       phoneNumber,
       email,
       password,
-      family: "60c289e8ae500b001fcd06f2",
+      dateOfBirth,
+      gender,
+      family: "60c289e8ae500b001fcd06f2", // Temporary family reference, will be updated
     });
 
     await primaryMember.save();
@@ -42,6 +50,7 @@ export default async function handler(req, res) {
       primaryMember: primaryMember._id,
     });
 
+    // Update the primary member's family reference
     primaryMember.family = newFamily._id;
     await primaryMember.save();
     await newFamily.save();
