@@ -132,7 +132,7 @@ const LoginForm = () => {
                   {/* Register CTA */}
                   <Link href="/register" passHref>
                     <Button variant="link" className="p-0">
-                      Don't have an account? Register
+                      Don&apos;t have an account? Register
                     </Button>
                   </Link>
                 </div>
