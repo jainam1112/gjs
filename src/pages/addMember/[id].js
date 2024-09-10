@@ -8,7 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../styles/globals.css'; // Import the global CSS
 import { Card, Button, Form, Container, Row, Col } from 'react-bootstrap';
-
+import Link from 'next/link';
 export const getServerSideProps = async (ctx) => {
   const authResult = await authMiddleware(ctx);
   if (authResult.redirect) return authResult;
@@ -53,6 +53,9 @@ const RegisterForm = () => {
     }
     if (!formData.password.trim()) {
       newErrors.password = 'Password is required';
+    }
+    if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 8 characters long';
     }
     if (!validateEmail(formData.email)) {
       newErrors.phoneNumber = 'Invalid email.';
@@ -99,11 +102,16 @@ const RegisterForm = () => {
       <ToastContainer />
       <Row className="w-100">
         <Col md={{ span: 6, offset: 3 }}>
-          <div className="d-flex justify-content-between align-items-center mb-1 mt-3">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+        <div className="logo-image me-2">
+          <a href='https://gjs.cyconservices.com' target="_blank" rel="noopener noreferrer">
+            <img src="/Gitanjali_Logo-removebg-preview.png" alt="Logo" className="logo-img" />
+          </a>
+        </div>
             <h2 className="title mb-1">Register a New Member</h2>
-            <Button className="custom-button" onClick={handleLogout}>
-              Logout
-            </Button>
+            <Link href={"/family/"+id} >
+                    <Button variant="primary" className="custom-button ms-5 my-0 px-3">Cancel</Button>
+                  </Link>
           </div>
           
           <div class="card">

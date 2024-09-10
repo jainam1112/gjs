@@ -10,6 +10,7 @@ import {
   Row,
   Col,
   Spinner,
+  Card
 } from "react-bootstrap";
 import { adminMiddleware } from "../../middleware/auth";
 import { useRouter } from 'next/router';
@@ -144,6 +145,19 @@ const MembersPage = () => {
     }
   };
 
+  const handleRestore = async (memberId) => {
+    setLoadingAction({ ...loadingAction, [memberId]: true }); // Set restore loading state
+    try {
+      await axios.patch(`/api/member/restore`, { memberId });
+      toast.success("Member restored successfully.");
+      fetchMembers();
+    } catch (error) {
+      toast.error("Error restoring member.");
+    } finally {
+      setLoadingAction({ ...loadingAction, [memberId]: false }); // Reset restore loading state
+    }
+  };
+
   const handleExport = async () => {
     setIsExporting(true);
     try {
@@ -175,6 +189,15 @@ const MembersPage = () => {
       [name]: value,
     }));
   };
+
+  const handleFamilyChange = (e) => {
+    const { name, value } = e.target;
+    setEditMember((prevEditMember) => ({
+      ...prevEditMember,
+      familyId: value,
+    }));
+  };
+
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -212,8 +235,20 @@ const MembersPage = () => {
     <Container className="mt-5">
       <ToastContainer />
       <Row className="mb-4">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+      <div className="logo-image me-2">
+          <a href='https://gjs.cyconservices.com' target="_blank" rel="noopener noreferrer">
+            <img src="/Gitanjali_Logo-removebg-preview.png" alt="Logo" className="logo-img" />
+          </a>
+        </div>
         <h2 className="title text-center">Member List</h2>
-        <Col md={12} className="d-flex justify-content-between align-items-center">
+        <Button className="custom-button mb-0" onClick={handleLogout}>
+              Logout
+            </Button>
+        </div>
+        <Col md={12} className="">
+        <Card className="shadow-lg ">
+        <Card.Body className="d-flex justify-content-between align-items-center">
           <div>
             <Button href="addMember" className="custom-button me-2 mb-0">
               Add Member
@@ -221,7 +256,7 @@ const MembersPage = () => {
             <Button onClick={handleExport} className="custom-button me-2 mb-0">
               {isExporting ? <Spinner animation="border" size="sm" /> : "Export Members"}
             </Button>
-            <Button variant={showDeleted ? "danger" : "outline-danger"} onClick={() => setShowDeleted(!showDeleted)}>
+            <Button variant={showDeleted ? "danger" : "outline-danger"} onClick={() => {setShowDeleted(!showDeleted),setCurrentPage(1)}}>
               {showDeleted ? "Hide Deleted" : "Show Deleted"}
             </Button>
           </div>
@@ -238,16 +273,35 @@ const MembersPage = () => {
             <Button onClick={handleSearch} className="custom-button mb-0">
               Search
             </Button>
-            <Button className="custom-button mb-0" onClick={handleLogout}>
-              Logout
-            </Button>
+           
           </div>
+          </Card.Body>
+          </Card>
         </Col>
       </Row>
 
       <Table striped bordered hover responsive className="custom-table">
-        <thead>
-          {/* Table header remains unchanged */}
+      <thead>
+          <tr>
+            <th onClick={() => handleSortChange('name')} style={{ cursor: 'pointer' }}>
+              First Name {sortBy === 'name' ? '▲' : sortBy === '-name' ? '▼' : ''}
+            </th>
+            <th onClick={() => handleSortChange('phoneNumber')} style={{ cursor: 'pointer' }}>
+              Phone Number {sortBy === 'phoneNumber' ? '▲' : sortBy === '-phoneNumber' ? '▼' : ''}
+            </th>
+            <th onClick={() => handleSortChange('email')} style={{ cursor: 'pointer' }}>
+              Email {sortBy === 'email' ? '▲' : sortBy === '-email' ? '▼' : ''}
+            </th>
+            <th>Date of Birth</th>
+            <th>Gender</th>
+            <th >
+              Family ID
+            </th>
+            <th onClick={() => handleSortChange('familyName')} style={{ cursor: 'pointer' }}>
+              Family Name {sortBy === 'familyName' ? '▲' : sortBy === '-familyName' ? '▼' : ''}
+            </th>
+            <th>Actions</th>
+          </tr>
         </thead>
         <tbody>
           {isLoading ? (
@@ -257,7 +311,7 @@ const MembersPage = () => {
               </td>
             </tr>
           ) : (
-            members.map((member) => (
+            members.length ? ( members.map((member) => (
               <tr key={member._id}>
                 <td>{member.name}</td>
                 <td>{member.phoneNumber}</td>
@@ -267,7 +321,7 @@ const MembersPage = () => {
                 <td>{member.familyId}</td>
                 <td>{member.familyName}</td>
                 <td>
-                  <Button
+                  {!showDeleted && <Button
                     variant="warning"
                     onClick={() => handleEditModal(member)}
                     disabled={loadingAction[member._id]}
@@ -277,8 +331,19 @@ const MembersPage = () => {
                     ) : (
                       "Edit"
                     )}
-                  </Button>
-                  <Button
+                  </Button>}
+                  {showDeleted ? <Button
+                    variant="danger"
+                    onClick={() => handleRestore(member._id)}
+                    className="ms-2"
+                    disabled={loadingAction[member._id]}
+                  >
+                    {loadingAction[member._id] ? (
+                      <Spinner animation="border" size="sm" />
+                    ) : (
+                      "Restore"
+                    )}
+                  </Button> : <Button
                     variant="danger"
                     onClick={() => handleDelete(member._id)}
                     className="ms-2"
@@ -289,11 +354,17 @@ const MembersPage = () => {
                     ) : (
                       "Delete"
                     )}
-                  </Button>
+                  </Button>}
                 </td>
               </tr>
             ))
-          )}
+          ) : (
+            <tr>
+              <td colSpan="8" className="text-center">
+                No members found
+              </td>
+            </tr>
+          ))}
         </tbody>
       </Table>
 
@@ -402,8 +473,8 @@ const MembersPage = () => {
               <Form.Control
                 as="select"
                 name="family"
-                value={editMember.family}
-                onChange={handleChange}
+                value={editMember.familyId}
+                onChange={handleFamilyChange}
                 required
                 className="custom-select"
               >

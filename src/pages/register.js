@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/globals.css"; // Custom CSS for additional styles
 import { Card, Button, Form, Container, Row, Col } from "react-bootstrap";
-
+import Link from 'next/link';
 const RegisterFamilyAndMemberForm = () => {
   const [formData, setFormData] = useState({
     familyName: "",
@@ -46,7 +46,9 @@ const RegisterFamilyAndMemberForm = () => {
       newErrors.phoneNumber =
         "Invalid phone number. It should be a 10-digit Indian phone number starting with 6-9";
     }
-
+    if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 8 characters long';
+    }
     if (!formData.dateOfBirth) {
       newErrors.dateOfBirth = "Date of birth is required";
     }
@@ -74,7 +76,7 @@ const RegisterFamilyAndMemberForm = () => {
       const familyId = response.data.family.familyId;
       router.push(`/family/${familyId}`);
     } catch (error) {
-      toast.error("Error creating family and member. " + error.message);
+      toast.error("Error creating family and member. " + error.response.data.message);
       console.error("Error creating family and member:", error);
     }
   };
@@ -84,11 +86,22 @@ const RegisterFamilyAndMemberForm = () => {
       <ToastContainer />
       <Row className="w-100">
         <Col md={{ span: 6, offset: 3 }}>
+        
+          
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2 className="title">Register New Family</h2>
+          <div className="logo-image me-2">
+          <a href='https://gjs.cyconservices.com' target="_blank" rel="noopener noreferrer">
+            <img src="/Gitanjali_Logo-removebg-preview.png" alt="Logo" className="logo-img" />
+          </a>
+        </div><h2 className="title">Register New Family</h2>
+        <div className="d-flex justify-content-flex-end">
+        <Link href="/" >
+                    <Button variant="primary" className="custom-button ms-5 my-0 px-3">Back</Button>
+                  </Link>
+                  </div>
           </div>
 
-          <div class="card">
+          <div class="card mb-3">
             <div class="card-body">
             <strong>Note: </strong> Members residing in Saibaba Nagar and nearby surrounding
               area are only allowed to register as member. Final membership
@@ -157,9 +170,13 @@ const RegisterFamilyAndMemberForm = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
+                    isInvalid={!!errors.password}
                     placeholder="Enter primary member password"
                     required
                   />
+                   <Form.Control.Feedback type="invalid">
+                    {errors.password}
+                  </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="dateOfBirth" className="mb-3">
                   <Form.Label>Date of Birth</Form.Label>

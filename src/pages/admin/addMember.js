@@ -9,7 +9,7 @@ import '../../styles/globals.css';
 import { logoutUser } from "../../middleware/logout"
 // Server-side authentication middleware (assuming it's defined elsewhere)
 import { adminMiddleware } from "../../middleware/auth";
-
+import Link from 'next/link';
 export const getServerSideProps = async (ctx) => {
   const authResult = await adminMiddleware(ctx);
   if (authResult.redirect) return authResult;
@@ -76,6 +76,9 @@ const RegisterForm = () => {
     if (!formData.password.trim()) {
       newErrors.password = 'Password is required';
     }
+    if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 8 characters long';
+    }
     if (!formData.dateOfBirth.trim()) {
       newErrors.dateOfBirth = 'Date of birth is required';
     }
@@ -107,7 +110,7 @@ const RegisterForm = () => {
       router.push(`/admin/members`);
     } catch (error) {
       console.error('Error registering', error);
-      toast.error('Error registering member.');
+      toast.error("Error creating family and member. " + error.response.data.message);
     }
   };
 
@@ -116,15 +119,19 @@ const RegisterForm = () => {
       <ToastContainer />
       <Row className="w-100">
         <Col md={{ span: 6, offset: 3 }}>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+        <div className="logo-image me-2">
+          <a href='https://gjs.cyconservices.com' target="_blank" rel="noopener noreferrer">
+            <img src="/Gitanjali_Logo-removebg-preview.png" alt="Logo" className="logo-img" />
+          </a>
+        </div>
+            <h2 className="title mb-1">Register a New Member</h2>
+            <Link href="/admin/members" >
+                    <Button variant="primary" className="custom-button ms-5 my-0 px-3">Cancel</Button>
+                  </Link>
+          </div>
           <Card className="shadow-lg">
             <Card.Body>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h2 className="title">Register a New Member</h2>
-                <Button className="custom-button mb-0" onClick={handleLogout}>
-              Logout
-            </Button>
-              </div>
-
               <Form onSubmit={handleSubmit}>
               <Form.Group controlId="name" className="mb-3">
                   <Form.Label>First Name</Form.Label>

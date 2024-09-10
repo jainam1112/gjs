@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     }
 
     // Check if the phone number already exists
-    const existingMember = await Member.findOne({ phoneNumber });
+    const existingMember = await Member.findOne({ phoneNumber,deleted:true  });
     if (existingMember) {
       return res.status(400).json({ message: 'Phone number already registered' });
     }

@@ -6,7 +6,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/globals.css'; // Custom CSS for additional styles
-import { Card, Button, Form, Container, Row, Col, Spinner } from 'react-bootstrap';
+import { Card, Button, Form, Container, Row, Col, Spinner, Modal } from 'react-bootstrap';
+import Link from 'next/link';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ const LoginForm = () => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -22,7 +24,7 @@ const LoginForm = () => {
   };
 
   const validatePhoneNumber = (phoneNumber) => {
-    const phoneRegex = /^[0-9]{10}$/; // Adjust this regex based on your phone number format requirements
+    const phoneRegex = /^[0-9]{10}$/;
     return phoneRegex.test(phoneNumber);
   };
 
@@ -32,7 +34,7 @@ const LoginForm = () => {
       newErrors.phoneNumber = 'Invalid phone number';
     }
     if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters long';
+      newErrors.password = 'Password must be at least 8 characters long';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -43,20 +45,28 @@ const LoginForm = () => {
     if (!validateForm()) {
       return;
     }
-    setIsLoading(true); // Set loading state
+    setIsLoading(true); 
     try {
       const response = await axios.post('/api/auth/login', formData);
       setCookie(null, 'userType', 'member', { path: '/' });
       setCookie(null, 'userId', response.data.userId, { path: '/' });
       toast.success('Login successful');
       const familyId = response.data.familyId;
-      router.push('/family/' + familyId); // Adjust this as needed for member redirection
+      router.push('/family/' + familyId);
     } catch (error) {
       toast.error('Error: ' + (error.response?.data?.message || 'Login failed'));
       console.error('Error logging in', error);
     } finally {
-      setIsLoading(false); // Reset loading state
+      setIsLoading(false);
     }
+  };
+
+  const handleForgotPassword = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
   };
 
   return (
@@ -64,9 +74,22 @@ const LoginForm = () => {
       <ToastContainer />
       <Row className="w-100">
         <Col md={{ span: 6, offset: 3 }}>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <div className="logo-image me-2">
+          <a href='https://gjs.cyconservices.com' target="_blank" rel="noopener noreferrer">
+            <img src="/Gitanjali_Logo-removebg-preview.png" alt="Logo" className="logo-img" />
+          </a>
+        </div><h2 className="title">Login</h2>
+        <div className="d-flex justify-content-flex-end">
+        <Link href="/" >
+                    <Button variant="primary" className="custom-button ms-5 my-0 px-3">Back</Button>
+                  </Link>
+                  </div>
+          </div>
+
           <Card className="shadow-lg">
             <Card.Body>
-              <Card.Title className="text-center title">Login</Card.Title>
+            
               <Form onSubmit={handleSubmit}>
                 <Form.Group controlId="phoneNumber" className="mb-3">
                   <Form.Label>Phone Number</Form.Label>
@@ -83,6 +106,7 @@ const LoginForm = () => {
                     {errors.phoneNumber}
                   </Form.Control.Feedback>
                 </Form.Group>
+
                 <Form.Group controlId="password" className="mb-3">
                   <Form.Label>Password</Form.Label>
                   <Form.Control
@@ -98,10 +122,26 @@ const LoginForm = () => {
                     {errors.password}
                   </Form.Control.Feedback>
                 </Form.Group>
-                <Button 
-                  type="submit" 
-                  className="custom-button w-100" 
-                  disabled={isLoading}>
+
+                <div className="d-flex justify-content-between align-items-center">
+                  {/* Forgot Password Link */}
+                  <Button variant="link" onClick={handleForgotPassword} className="p-0">
+                    Forgot Password?
+                  </Button>
+
+                  {/* Register CTA */}
+                  <Link href="/register" passHref>
+                    <Button variant="link" className="p-0">
+                      Don't have an account? Register
+                    </Button>
+                  </Link>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="custom-button w-100 mt-3"
+                  disabled={isLoading}
+                >
                   {isLoading ? (
                     <>
                       <Spinner
@@ -114,13 +154,30 @@ const LoginForm = () => {
                       />
                       Logging in...
                     </>
-                  ) : 'Login'}
+                  ) : (
+                    'Login'
+                  )}
                 </Button>
               </Form>
             </Card.Body>
           </Card>
         </Col>
       </Row>
+
+      {/* Forgot Password Modal */}
+      <Modal show={showModal} onHide={handleCloseModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Forgot Password</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Please contact the administrator at <a href="mailto:sgjsb1978@gmail.com">sgjsb1978@gmail.com</a> to reset your password.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

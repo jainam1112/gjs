@@ -116,6 +116,11 @@ const FamilyMembersList = () => {
     <Container className="mt-5">
       <ToastContainer />
       <div className="d-flex justify-content-between align-items-center mb-3">
+      <div className="logo-image me-2">
+          <a href='https://gjs.cyconservices.com' target="_blank" rel="noopener noreferrer">
+            <img src="/Gitanjali_Logo-removebg-preview.png" alt="Logo" className="logo-img" />
+          </a>
+        </div>
         <h2 className="title">Family Members List</h2>
         <div>
         {family && (<Button onClick={handleClick} className="custom-button">Add New Member</Button>)}
@@ -154,7 +159,7 @@ const FamilyMembersList = () => {
               <td>
                 <div className="btn-group" role="group">
                   <Button variant="outline-primary" disabled={family.primaryMember === member._id} size="sm" onClick={() => handleEditModal(member)}>Edit</Button>
-                  <Button variant="outline-danger" disabled={family.primaryMember === member._id} size="sm" onClick={() => handleDelete(member._id)}>Delete</Button>
+                  {/* <Button variant="outline-danger" disabled={family.primaryMember === member._id} size="sm" onClick={() => handleDelete(member._id)}>Delete</Button> */}
                 </div>
               </td>
             </tr>
