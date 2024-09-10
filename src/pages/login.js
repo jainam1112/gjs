@@ -6,7 +6,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/globals.css'; // Custom CSS for additional styles
-import { Card, Button, Form, Container, Row, Col } from 'react-bootstrap';
+import { Card, Button, Form, Container, Row, Col, Spinner } from 'react-bootstrap';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +14,7 @@ const LoginForm = () => {
     password: '',
   });
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -30,6 +31,9 @@ const LoginForm = () => {
     if (!validatePhoneNumber(formData.phoneNumber)) {
       newErrors.phoneNumber = 'Invalid phone number';
     }
+    if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters long';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -39,6 +43,7 @@ const LoginForm = () => {
     if (!validateForm()) {
       return;
     }
+    setIsLoading(true); // Set loading state
     try {
       const response = await axios.post('/api/auth/login', formData);
       setCookie(null, 'userType', 'member', { path: '/' });
@@ -49,6 +54,8 @@ const LoginForm = () => {
     } catch (error) {
       toast.error('Error: ' + (error.response?.data?.message || 'Login failed'));
       console.error('Error logging in', error);
+    } finally {
+      setIsLoading(false); // Reset loading state
     }
   };
 
@@ -84,10 +91,31 @@ const LoginForm = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Enter your password"
+                    isInvalid={!!errors.password}
                     required
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.password}
+                  </Form.Control.Feedback>
                 </Form.Group>
-                <Button type="submit" className="custom-button w-100">Login</Button>
+                <Button 
+                  type="submit" 
+                  className="custom-button w-100" 
+                  disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                        className="me-2"
+                      />
+                      Logging in...
+                    </>
+                  ) : 'Login'}
+                </Button>
               </Form>
             </Card.Body>
           </Card>

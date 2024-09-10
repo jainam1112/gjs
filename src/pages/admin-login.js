@@ -6,7 +6,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/globals.css'; // Import the global CSS
-import { Card, Button, Form, Container, Row, Col } from 'react-bootstrap';
+import { Card, Button, Form, Container, Row, Col, Spinner } from 'react-bootstrap';
 
 const AdminLoginForm = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +14,7 @@ const AdminLoginForm = () => {
     password: '',
   });
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false); // Add loading state
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -27,16 +28,16 @@ const AdminLoginForm = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!validateEmail(formData.email)) {
-      newErrors.email = 'Invalid email address';
-    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+    if (!validateForm()) {
+      return;
+    }
+    setIsLoading(true); // Set loading state to true before making the request
     try {
       const response = await axios.post('/api/auth/admin-login', formData);
       setCookie(null, 'userType', 'admin', { path: '/' });
@@ -46,6 +47,8 @@ const AdminLoginForm = () => {
     } catch (error) {
       toast.error('Error: ' + (error.response.data.message ? error.response.data.message : 'Internal error'));
       console.error('Error logging in', error);
+    } finally {
+      setIsLoading(false); // Set loading state back to false after the request is completed
     }
   };
 
@@ -61,11 +64,12 @@ const AdminLoginForm = () => {
                 <Form.Group controlId="email" className="mb-3">
                   <Form.Label>Username</Form.Label>
                   <Form.Control
-                    name="email"
+                    name="text"
                     type="text"
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Enter your username"
+                    isInvalid={!!errors.email}
                     required
                   />
                   <Form.Control.Feedback type="invalid">
@@ -83,7 +87,21 @@ const AdminLoginForm = () => {
                     required
                   />
                 </Form.Group>
-                <Button type="submit" className="custom-button w-100">Login</Button>
+                <Button type="submit" className="custom-button w-100" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                        className="me-2"
+                      />
+                      Logging in...
+                    </>
+                  ) : 'Login'}
+                </Button>
               </Form>
             </Card.Body>
           </Card>

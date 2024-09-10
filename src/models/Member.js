@@ -28,7 +28,7 @@ const MemberSchema = new mongoose.Schema({
   },
   gender: {
     type: String,
-    enum: ['Male', 'Female', 'Other'], // Optional: restrict gender to specific values
+    enum: ['Male', 'Female'], // Optional: restrict gender to specific values
   },
   deleted: {
     type: Boolean,

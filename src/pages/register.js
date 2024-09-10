@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useRouter } from 'next/router';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import '../styles/globals.css'; // Custom CSS for additional styles
-import { Card, Button, Form, Container, Row, Col } from 'react-bootstrap';
+import React, { useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/router";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "../styles/globals.css"; // Custom CSS for additional styles
+import { Card, Button, Form, Container, Row, Col } from "react-bootstrap";
 
 const RegisterFamilyAndMemberForm = () => {
   const [formData, setFormData] = useState({
-    familyName: '',
-    name: '',
-    phoneNumber: '',
-    email: '',
-    password: '',
-    dateOfBirth: '',
-    gender: ''
+    familyName: "",
+    name: "",
+    phoneNumber: "",
+    email: "",
+    password: "",
+    dateOfBirth: "",
+    gender: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -39,19 +39,20 @@ const RegisterFamilyAndMemberForm = () => {
     const newErrors = {};
 
     if (!validateEmail(formData.email)) {
-      newErrors.email = 'Invalid email address';
+      newErrors.email = "Invalid email address";
     }
 
     if (!validatePhoneNumber(formData.phoneNumber)) {
-      newErrors.phoneNumber = 'Invalid phone number. It should be a 10-digit Indian phone number starting with 6-9';
+      newErrors.phoneNumber =
+        "Invalid phone number. It should be a 10-digit Indian phone number starting with 6-9";
     }
 
     if (!formData.dateOfBirth) {
-      newErrors.dateOfBirth = 'Date of birth is required';
+      newErrors.dateOfBirth = "Date of birth is required";
     }
 
     if (!formData.gender) {
-      newErrors.gender = 'Gender is required';
+      newErrors.gender = "Gender is required";
     }
 
     setErrors(newErrors);
@@ -65,13 +66,16 @@ const RegisterFamilyAndMemberForm = () => {
     }
 
     try {
-      const response = await axios.post('/api/auth/registerWithPrimaryMember', formData);
-      toast.success('Family and primary member registered successfully!');
+      const response = await axios.post(
+        "/api/auth/registerWithPrimaryMember",
+        formData
+      );
+      toast.success("Family and primary member registered successfully!");
       const familyId = response.data.family.familyId;
       router.push(`/family/${familyId}`);
     } catch (error) {
-      toast.error('Error creating family and member. ' + error.message);
-      console.error('Error creating family and member:', error);
+      toast.error("Error creating family and member. " + error.message);
+      console.error("Error creating family and member:", error);
     }
   };
 
@@ -82,6 +86,14 @@ const RegisterFamilyAndMemberForm = () => {
         <Col md={{ span: 6, offset: 3 }}>
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h2 className="title">Register New Family</h2>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+            <strong>Note: </strong> Members residing in Saibaba Nagar and nearby surrounding
+              area are only allowed to register as member. Final membership
+              decision will be taken by Shri Sangh only.
+            </div>
           </div>
           <Card className="shadow-lg">
             <Card.Body>
@@ -171,10 +183,11 @@ const RegisterFamilyAndMemberForm = () => {
                     <option value="">Select gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
-                    <option value="Other">Other</option>
                   </Form.Control>
                 </Form.Group>
-                <Button type="submit" className="custom-button w-100">Register</Button>
+                <Button type="submit" className="custom-button w-100">
+                  Register
+                </Button>
               </Form>
             </Card.Body>
           </Card>

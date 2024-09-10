@@ -105,7 +105,15 @@ const RegisterForm = () => {
               Logout
             </Button>
           </div>
-          <h4 className="sub-title mt-0 mb-3"><small>{familyName && "Family Name: "+ familyName}</small></h4>
+          
+          <div class="card">
+            <div class="card-body">
+              <strong>Note: </strong>Members residing in Saibaba Nagar and nearby surrounding
+              area are only allowed to register as member. Final membership
+              decision will be taken by Shri Sangh only.
+            </div>
+          </div>
+          <h4 className="sub-title mt-2 mb-3"><small>{familyName && "Family Name: "+ familyName}</small></h4>
           <Card className="shadow-lg">
             <Card.Body>
               <Form onSubmit={handleSubmit}>
@@ -181,7 +189,7 @@ const RegisterForm = () => {
                     <option value="">Select gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
-                    <option value="Other">Other</option>
+
                   </Form.Control>
                   <Form.Control.Feedback type="invalid">
                     {errors.gender}
