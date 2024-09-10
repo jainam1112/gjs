@@ -64,7 +64,7 @@ const AdminLoginForm = () => {
                 <Form.Group controlId="email" className="mb-3">
                   <Form.Label>Username</Form.Label>
                   <Form.Control
-                    name="text"
+                    name="email"
                     type="text"
                     value={formData.email}
                     onChange={handleChange}

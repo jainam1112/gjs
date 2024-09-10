@@ -124,8 +124,9 @@ body {
 
 .content-wrapper {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   height: 100%;
+  width: 100%;
 }
 
 .banner-image {
@@ -144,7 +145,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #582626; /* Optional: add a background color */
+  background-color: #F6E9D7; /* Optional: add a background color */
   padding: 20px;
 }
 
@@ -153,7 +154,7 @@ body {
   margin-bottom: 20px;
 }
 .header-panel {
-  background-color: #977040; /* Dark background color */
+  background-color: #F6E9D7; /* Dark background color */
   color: #fff; /* White text color */
   border-bottom: 2px solid #582626; /* Border color for the bottom */
   width:100%
@@ -165,8 +166,8 @@ body {
 }
 
 .header-actions .btn {
-  color: #fff; /* White text color */
-  border: 1px solid #fff; /* White border */
+  color: #582626; /* White text color */
+  border: 1px solid #582626; /* White border */
 }
 
 .header-actions .btn:hover {
@@ -175,5 +176,5 @@ body {
   border-color:#977040 ;
 }
 .logo-img{
-  max-height: 80px;
+  max-height: 110px;
 }
