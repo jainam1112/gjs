@@ -91,7 +91,7 @@ const FamilyMembersList = () => {
     try {
       await axios.patch(`/api/member/remove`, { memberId });
       setFamilyMembers(familyMembers.filter(member => member._id !== memberId));
-      toast.success('Member deleted successfully');
+      toast.success('Member archived successfully');
     } catch (error) {
       toast.error('Error deleting member');
       console.error('Error deleting member:', error);

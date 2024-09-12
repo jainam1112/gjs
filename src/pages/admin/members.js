@@ -136,7 +136,7 @@ const MembersPage = () => {
     setLoadingAction({ ...loadingAction, [memberId]: true }); // Set delete loading state
     try {
       await axios.patch(`/api/member/remove`, { memberId });
-      toast.success("Member deleted successfully.");
+      toast.success("Member archived successfully.");
       fetchMembers();
     } catch (error) {
       toast.error("Error deleting member.");
@@ -363,26 +363,26 @@ const MembersPage = () => {
                     )}
                   </Button> : <Button
                     variant="warning"
-                    onClick={() => handleDelete(member._id)}
-                     className="mb-2"
-                    disabled={loadingAction[member._id]}
-                  >
-                    {loadingAction[member._id] ? (
-                      <Spinner animation="border" size="sm" />
-                    ) : (
-                      "Delete"
-                    )}
-                  </Button>}
-                  {showDeleted ? <Button
-                    variant="danger"
                     onClick={() => handleRestore(member._id)}
-                    className="ms-2 mb-2"
+                    className="mb-2"
                     disabled={loadingAction[member._id]}
                   >
                     {loadingAction[member._id] ? (
                       <Spinner animation="border" size="sm" />
                     ) : (
                       "Restore"
+                    )}
+                  </Button>}
+                  {!showDeleted ? <Button
+                    variant="danger"
+                    onClick={() => handleDelete(member._id)}
+                     className="ms-2 mb-2"
+                    disabled={loadingAction[member._id]}
+                  >
+                    {loadingAction[member._id] ? (
+                      <Spinner animation="border" size="sm" />
+                    ) : (
+                      "Archive"
                     )}
                   </Button> : <Button
                     variant="danger"

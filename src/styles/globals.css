@@ -10,7 +10,6 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   align-items: center;
 }
 
@@ -28,22 +27,42 @@ body {
 }
 
 .custom-button:hover {
-  background-color: #451b1b;
-  border-color: #451b1b;
-  color: white;
+  background-color: transparent!important;
+  border-color: #582626!important;
+  color: #582626!important;
 }
 
+.custom-button:active{
+  background-color: transparent!important;
+  border-color: #582626!important;
+  color: #582626!important;
+}
+.custom-button:disabled{
+  background-color: transparent!important;
+  border-color: #582626!important;
+  color: #582626!important;
+}
 .custom-secondary-button {
   background-color: #977040;
   border-color: #977040;
   color: white;
 }
-
-.custom-secondary-button:hover {
-  background-color: #785d2c;
-  border-color: #785d2c;
+.custom-button:focus-visible{
+  background-color: transparent!important;
+  border-color: #582626!important;
+  color: #582626!important;
+  box-shadow:none
 }
 
+.custom-secondary-button:hover {
+  background-color: #582626;
+  border-color: #582626;
+}
+.custom-secondary:active{
+  background-color: #582626!important;
+  border-color: #582626!important;
+  color: white;
+}
 .custom-button, .custom-secondary-button {
   margin-right: 10px;
   margin-bottom: 10px;
