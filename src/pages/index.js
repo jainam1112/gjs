@@ -8,18 +8,7 @@ const Home = () => {
   return (
     <div className="home-container">
       {/* Header */}
-      <header className="header-panel d-flex justify-content-between align-items-center py-1 px-4">
-        <div className="logo-image">
-          <a href='https://gjs.cyconservices.com' target="_blank" rel="noopener noreferrer">
-            <img src="/Gitanjali_Logo-removebg-preview.png" alt="Logo" className="logo-img" />
-          </a>
-        </div>
-        <div className="header-actions">
-          <Link href="/admin-login" passHref>
-            <Button variant="outline-light" className="me-2">Admin Login</Button>
-          </Link>
-        </div>
-      </header>
+      
 
       {/* Main Content */}
       <div className='content-wrapper'>
@@ -35,18 +24,36 @@ const Home = () => {
         </div>
 
         {/* Info Panel */}
-        <div className="info-panel py-5">
-          <Container className="d-flex flex-column justify-content-center align-items-center text-center">
+        <header className=" d-flex justify-content-between align-items-center py-1 px-4">
+        <div className="logo-image">
+          <a href='https://gjs.cyconservices.com' target="_blank" rel="noopener noreferrer">
+            <img src="/Gitanjali_Logo-removebg-preview.png" alt="Logo" className="logo-img" />
+          </a>
+        </div>
+        <h1 className="title d-md-block d-none">Welcome to the Gitanjali Jain Sangh Family Management App</h1>
+        <div >
+          <Link href="/admin-login" passHref>
+            <Button variant="primary" className="custom-button me-2 px-3">Admin Login</Button>
+          </Link>
+        </div>
+      </header>
+      <h1 className="title d-md-none mx-3">Welcome to the Gitanjali Jain Sangh Family Management App</h1>
+        <div className="info-panel ">
+          <Container className="d-flex flex-md-column justify-content-center align-items-center text-center">
             <Row>
               <Col>
-                <h1 className="title">Welcome to the Gitanjali Jain Sangh Family Management App</h1>
-                <div className="button-group mt-4">
+             
+
+
+
+              
+                <div className="button-group d-flex flex-column flex-md-row">
                   
                   <Link href="/login" passHref>
-                    <Button variant="secondary" className="custom-secondary-button px-3">Login</Button>
+                    <Button variant="secondary" className="custom-secondary-button px-3 w-100">Login</Button>
                   </Link>
                   <Link href="/register" passHref>
-                    <Button variant="primary" className="custom-button me-2 px-3">Register</Button>
+                    <Button variant="primary" className="custom-button ms-md-2 px-3 w-100">Register</Button>
                   </Link>
                 </div>
               </Col>

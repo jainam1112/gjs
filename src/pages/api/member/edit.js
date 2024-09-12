@@ -46,8 +46,7 @@ export default async function handler(req, res) {
 
     // Update password if provided
     if (password) {
-      const salt = await bcrypt.genSalt(10);
-      member.password = await bcrypt.hash(password, salt);
+      member.password = password;
     }
 
     await member.save();

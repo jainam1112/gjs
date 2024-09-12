@@ -88,7 +88,7 @@ const RegisterForm = () => {
       router.push(`/family/${formData.familyId}`);
     } catch (error) {
       console.error('Error registering', error);
-      toast.error('Error registering member.');
+      toast.error("Error creating family and member. " + error.response.data.message);
     }
   };
 
@@ -108,12 +108,12 @@ const RegisterForm = () => {
             <img src="/Gitanjali_Logo-removebg-preview.png" alt="Logo" className="logo-img" />
           </a>
         </div>
-            <h2 className="title mb-1">Register a New Member</h2>
+            <h2 className="title mb-1 d-none d-md-block">Register a New Member</h2>
             <Link href={"/family/"+id} >
                     <Button variant="primary" className="custom-button ms-5 my-0 px-3">Cancel</Button>
                   </Link>
           </div>
-          
+          <h2 className="title mb-1 d-md-none">Register a New Member</h2>
           <div class="card">
             <div class="card-body">
               <strong>Note: </strong>Members residing in Saibaba Nagar and nearby surrounding

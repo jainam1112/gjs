@@ -158,6 +158,20 @@ const MembersPage = () => {
     }
   };
 
+  const handlePermanentDelete = async (memberId) => {
+    setLoadingAction({ ...loadingAction, [memberId]: true }); // Set delete loading state
+    try {
+      await axios.delete(`/api/member/delete`, { data: { memberId } }); // Send DELETE request with memberId
+      toast.success("Member permanently deleted successfully.");
+      fetchMembers(); // Fetch updated list after deletion
+    } catch (error) {
+      toast.error("Error permanently deleting member.");
+    } finally {
+      setLoadingAction({ ...loadingAction, [memberId]: false }); // Reset delete loading state
+    }
+  };
+  
+
   const handleExport = async () => {
     setIsExporting(true);
     try {
@@ -241,43 +255,58 @@ const MembersPage = () => {
             <img src="/Gitanjali_Logo-removebg-preview.png" alt="Logo" className="logo-img" />
           </a>
         </div>
-        <h2 className="title text-center">Member List</h2>
+        <h2 className="title text-center d-none d-md-block">Members List</h2>
         <Button className="custom-button mb-0" onClick={handleLogout}>
               Logout
             </Button>
         </div>
+        <h2 className="title text-center d-md-none">Members List</h2>
         <Col md={12} className="">
-        <Card className="shadow-lg ">
-        <Card.Body className="d-flex justify-content-between align-items-center">
-          <div>
-            <Button href="addMember" className="custom-button me-2 mb-0">
+  <Card className="shadow-lg">
+    <Card.Body>
+      <Row className="d-flex justify-content-between align-items-center">
+        <Col xs={12} md={6} className="mb-3 mb-md-0">
+          <div className="d-flex flex-wrap">
+            <Button href="addMember" className="custom-button me-2 mb-2 mb-md-0">
               Add Member
             </Button>
-            <Button onClick={handleExport} className="custom-button me-2 mb-0">
+            <Button onClick={handleExport} className="custom-button me-2 mb-2 mb-md-0">
               {isExporting ? <Spinner animation="border" size="sm" /> : "Export Members"}
             </Button>
-            <Button variant={showDeleted ? "danger" : "outline-danger"} onClick={() => {setShowDeleted(!showDeleted),setCurrentPage(1)}}>
+            <Button
+              variant={showDeleted ? "danger" : "outline-danger"}
+              onClick={() => {
+                setShowDeleted(!showDeleted);
+                setCurrentPage(1);
+              }}
+              className="mb-2 mb-md-0"
+            >
               {showDeleted ? "Hide Deleted" : "Show Deleted"}
             </Button>
           </div>
-          <div className="d-flex align-items-center">
+        </Col>
+
+        <Col xs={12} md={6} className="d-flex justify-content-end">
+          <div className="d-flex align-items-center w-100 flex-md-nowrap">
             <Form.Control
               type="text"
               placeholder="Search members..."
               value={searchQuery}
               onChange={handleSearchChange}
               onKeyPress={handleKeyPress} // Trigger search on Enter
-              className="me-2 custom-input mb-0"
+              className="me-2 custom-input w-100 mb-2 mb-md-0"
               style={{ maxWidth: "300px" }}
             />
-            <Button onClick={handleSearch} className="custom-button mb-0">
+            <Button onClick={handleSearch} className="custom-button w-100 w-md-auto mb-0">
               Search
             </Button>
-           
           </div>
-          </Card.Body>
-          </Card>
         </Col>
+      </Row>
+    </Card.Body>
+  </Card>
+</Col>
+
       </Row>
 
       <Table striped bordered hover responsive className="custom-table">
@@ -316,13 +345,14 @@ const MembersPage = () => {
                 <td>{member.name}</td>
                 <td>{member.phoneNumber}</td>
                 <td>{member.email}</td>
-                <td>{member.dateOfBirth}</td>
+                <td>{member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString('en-CA'): ''}</td>
                 <td>{member.gender}</td>
                 <td>{member.familyId}</td>
                 <td>{member.familyName}</td>
-                <td>
-                  {!showDeleted && <Button
+                <td className="text-center">
+                  {!showDeleted ? <Button
                     variant="warning"
+                    className="mb-2"
                     onClick={() => handleEditModal(member)}
                     disabled={loadingAction[member._id]}
                   >
@@ -331,11 +361,22 @@ const MembersPage = () => {
                     ) : (
                       "Edit"
                     )}
+                  </Button> : <Button
+                    variant="warning"
+                    onClick={() => handleDelete(member._id)}
+                     className="mb-2"
+                    disabled={loadingAction[member._id]}
+                  >
+                    {loadingAction[member._id] ? (
+                      <Spinner animation="border" size="sm" />
+                    ) : (
+                      "Delete"
+                    )}
                   </Button>}
                   {showDeleted ? <Button
                     variant="danger"
                     onClick={() => handleRestore(member._id)}
-                    className="ms-2"
+                    className="ms-2 mb-2"
                     disabled={loadingAction[member._id]}
                   >
                     {loadingAction[member._id] ? (
@@ -345,14 +386,14 @@ const MembersPage = () => {
                     )}
                   </Button> : <Button
                     variant="danger"
-                    onClick={() => handleDelete(member._id)}
-                    className="ms-2"
+                    onClick={() => handlePermanentDelete(member._id)}
+                    className="ms-2 mb-2"
                     disabled={loadingAction[member._id]}
                   >
                     {loadingAction[member._id] ? (
                       <Spinner animation="border" size="sm" />
                     ) : (
-                      "Delete"
+                      "Permanent Delete"
                     )}
                   </Button>}
                 </td>

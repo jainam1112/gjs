@@ -79,14 +79,14 @@ const LoginForm = () => {
           <a href='https://gjs.cyconservices.com' target="_blank" rel="noopener noreferrer">
             <img src="/Gitanjali_Logo-removebg-preview.png" alt="Logo" className="logo-img" />
           </a>
-        </div><h2 className="title">Login</h2>
+        </div><h2 className="title d-none d-md-block">Login</h2>
         <div className="d-flex justify-content-flex-end">
         <Link href="/" >
                     <Button variant="primary" className="custom-button ms-5 my-0 px-3">Back</Button>
                   </Link>
                   </div>
           </div>
-
+          <h2 className="title d-md-none">Login</h2>
           <Card className="shadow-lg">
             <Card.Body>
             
@@ -173,7 +173,7 @@ const LoginForm = () => {
           Please contact the administrator at <a href="mailto:sgjsb1978@gmail.com">sgjsb1978@gmail.com</a> to reset your password.
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
+          <Button variant="primary" className="custom-button" onClick={handleCloseModal}>
             Close
           </Button>
         </Modal.Footer>

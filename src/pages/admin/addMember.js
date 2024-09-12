@@ -115,7 +115,7 @@ const RegisterForm = () => {
   };
 
   return (
-    <Container className="d-flex justify-content-center align-items-center min-vh-100">
+    <Container className="d-flex justify-content-center align-items-center min-vh-100 my-3">
       <ToastContainer />
       <Row className="w-100">
         <Col md={{ span: 6, offset: 3 }}>
@@ -125,10 +125,18 @@ const RegisterForm = () => {
             <img src="/Gitanjali_Logo-removebg-preview.png" alt="Logo" className="logo-img" />
           </a>
         </div>
-            <h2 className="title mb-1">Register a New Member</h2>
+            <h2 className="title mb-1 d-none d-md-block">Register a New Member</h2>
             <Link href="/admin/members" >
                     <Button variant="primary" className="custom-button ms-5 my-0 px-3">Cancel</Button>
                   </Link>
+          </div>
+          <h2 className="title mb-1 d-md-none">Register a New Member</h2>
+          <div class="card mb-2">
+            <div class="card-body">
+              <strong>Note: </strong>Members residing in Saibaba Nagar and nearby surrounding
+              area are only allowed to register as member. Final membership
+              decision will be taken by Shri Sangh only.
+            </div>
           </div>
           <Card className="shadow-lg">
             <Card.Body>

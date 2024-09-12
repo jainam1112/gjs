@@ -121,7 +121,7 @@ const FamilyMembersList = () => {
             <img src="/Gitanjali_Logo-removebg-preview.png" alt="Logo" className="logo-img" />
           </a>
         </div>
-        <h2 className="title">Family Members List</h2>
+        <h2 className="title d-md-block d-none">Family Members List</h2>
         <div>
         {family && (<Button onClick={handleClick} className="custom-button">Add New Member</Button>)}
         <Button className="custom-button" onClick={handleLogout}>
@@ -129,13 +129,14 @@ const FamilyMembersList = () => {
             </Button>
             </div>
       </div>
+      <h2 className="title d-md-none">Family Members List</h2>
       {family && (
         <div className="mb-3">
           <h4>Family (Surname): {family.familyName}</h4>
           <p><strong>Family ID:</strong> {family.familyId}</p>
         </div>
       )}
-      <Table striped bordered hover className="custom-table">
+        <Table striped bordered hover responsive className="custom-table">
         <thead>
           <tr>
             <th>Family ID</th>

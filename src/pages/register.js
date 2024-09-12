@@ -82,7 +82,7 @@ const RegisterFamilyAndMemberForm = () => {
   };
 
   return (
-    <Container className="d-flex justify-content-center align-items-center min-vh-100">
+    <Container className="d-flex justify-content-center align-items-center min-vh-100 py-3">
       <ToastContainer />
       <Row className="w-100">
         <Col md={{ span: 6, offset: 3 }}>
@@ -93,14 +93,14 @@ const RegisterFamilyAndMemberForm = () => {
           <a href='https://gjs.cyconservices.com' target="_blank" rel="noopener noreferrer">
             <img src="/Gitanjali_Logo-removebg-preview.png" alt="Logo" className="logo-img" />
           </a>
-        </div><h2 className="title">Register New Family</h2>
+        </div><h2 className="title d-none d-md-block">Register New Family</h2>
         <div className="d-flex justify-content-flex-end">
         <Link href="/" >
                     <Button variant="primary" className="custom-button ms-5 my-0 px-3">Back</Button>
                   </Link>
                   </div>
           </div>
-
+          <h2 className="title d-md-none">Register New Family</h2>
           <div class="card mb-3">
             <div class="card-body">
             <strong>Note: </strong> Members residing in Saibaba Nagar and nearby surrounding

@@ -164,12 +164,27 @@ body {
   margin: 0;
   font-size: 1.5rem;
 }
-
+.modal-title{
+  color: #582626; /* White text color */
+}
 .header-actions .btn {
   color: #582626; /* White text color */
   border: 1px solid #582626; /* White border */
 }
-
+.modal-body{
+  color: #582626; /* White text color */
+}
+a {
+  color: #582626;
+  font-weight: 700;
+  text-decoration: underline;
+}
+.btn-link{
+  color: #582626; 
+}
+.btn-link:hover{
+  color: #977040;
+}
 .header-actions .btn:hover {
   background-color: #fff; /* Darker background on hover */
   color: #977040;
