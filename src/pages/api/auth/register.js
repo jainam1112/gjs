@@ -11,10 +11,9 @@ export default async function handler(req, res) {
 
   try {
     // Ensure familyId is a number
-    const familyIdNumber = Number(familyId);
-    if (isNaN(familyIdNumber)) {
-      return res.status(400).json({ message: 'Invalid family ID' });
-    }
+    const familyIdNumber = familyId;
+
+
 
     // Check if the familyId exists
     const family = await Family.findOne({ familyId: familyIdNumber });

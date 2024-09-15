@@ -133,9 +133,17 @@ body {
   border-color: #ced4da;
 }
 .primary td{
-  background-color: #58262645;
+  background-color: #5826266b;
+}
+.archived td{
+  background-color: #582626ad;
+  color: rgba(255, 255, 255, 0.427);
 }
 .primary .btn:disabled{
+  color: #ced4da;
+  border-color:#ced4da;
+}
+.archived .btn:disabled{
   color: #ced4da;
   border-color:#ced4da;
 }

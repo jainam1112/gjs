@@ -1,5 +1,3 @@
-// pages/api/members/fetchmembers.js
-
 import connectToDatabase from '../../../lib/mongodb';
 import Member from '../../../models/Member';
 import Family from '../../../models/Family'; // Import Family model
@@ -48,12 +46,15 @@ export default async function handler(req, res) {
       filterObj.deleted = { $ne: true };
     }
 
+    // Get total count of members that match the filter
+    const totalMembers = await Member.countDocuments(filterObj);
+
     // Query members with pagination, sorting, and optional filtering
     const members = await Member.find(filterObj)
       .populate({
         path: 'family',
-        select: ['familyId','familyName'], // Select only the fields needed for sorting
-      }) 
+        select: ['familyId', 'familyName'], // Select only the fields needed for sorting
+      })
       .sort({ [newsortBy]: sortDirection }) // Sort by ascending order of the specified field
       .skip(skip)
       .limit(parseInt(limit))
@@ -74,9 +75,9 @@ export default async function handler(req, res) {
         }
         return 0;
       });
-      res.status(200).json({ members: membersWithFamily });
+      res.status(200).json({ members: membersWithFamily, totalMembers });
     } else {
-      res.status(200).json({ members });
+      res.status(200).json({ members, totalMembers });
     }
   } catch (error) {
     console.error('Error fetching members:', error);

@@ -2,11 +2,9 @@ import mongoose from 'mongoose';
 
 const FamilySchema = new mongoose.Schema({
   familyId: {
-    type: Number,
+    type: String, // Change from Number to String
     required: true,
-    unique: true,
-    min: 1000,
-    max: 9999,
+    unique: true, // Ensure familyId is unique
   },
   familyName: {
     type: String,

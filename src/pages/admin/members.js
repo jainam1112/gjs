@@ -47,18 +47,20 @@ const MembersPage = () => {
     password: "",
     deleted: false,
   });
+  const [errors, setErrors] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [showDeleted, setShowDeleted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [membersPerPage] = useState(10);
+  const [totalMembers,setTotalMembers] = useState(10);
   const [isPasswordUnlocked, setIsPasswordUnlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // General loading state
   const [isExporting, setIsExporting] = useState(false); // Loading state for export
   const [isSaving, setIsSaving] = useState(false); // Loading state for save button
   const [loadingAction, setLoadingAction] = useState({}); // Individual loading state for delete and edit actions
-
+ 
   useEffect(() => {
     fetchMembers();
     fetchFamilies();
@@ -85,6 +87,7 @@ const MembersPage = () => {
         familyName: member.family.familyName,
       }));
       setMembers(membersData);
+      setTotalMembers(response.data.totalMembers)
     } catch (error) {
       toast.error("Error fetching members.");
     } finally {
@@ -114,6 +117,9 @@ const MembersPage = () => {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      return;
+    }
     setIsSaving(true);
     try {
       const updatedMember = { ...editMember };
@@ -171,6 +177,40 @@ const MembersPage = () => {
     }
   };
   
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhoneNumber = (phoneNumber) => {
+    const phoneRegex = /^[6-9]\d{9}$/; // Indian phone number validation
+    return phoneRegex.test(phoneNumber);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!editMember.name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+    if (!validatePhoneNumber(editMember.phoneNumber)) {
+      newErrors.phoneNumber = 'Invalid phone number. Must be 10 digits and start with 6-9.';
+    }
+    if (!validateEmail(editMember.email)) {
+      newErrors.email = 'Invalid email address.';
+    }
+    if (!editMember.dateOfBirth.trim()) {
+      newErrors.dateOfBirth = 'Date of birth is required';
+    }
+    if (!editMember.gender.trim()) {
+      newErrors.gender = 'Gender is required';
+    }
+    if (!editMember.familyId) {
+      newErrors.familyId = 'Family selection is required';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -245,6 +285,15 @@ const MembersPage = () => {
     router.push('/admin-login');
   };
 
+  const calculateAge = (dateOfBirth) => {
+    if (!dateOfBirth) return '';
+    const dob = new Date(dateOfBirth);
+    const ageDiff = Date.now() - dob.getTime();
+    const ageDate = new Date(ageDiff);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+  };
+
+  const totalPages = Math.ceil(totalMembers / membersPerPage);
   return (
     <Container className="mt-5">
       <ToastContainer />
@@ -269,6 +318,9 @@ const MembersPage = () => {
           <div className="d-flex flex-wrap">
             <Button href="addMember" className="custom-button me-2 mb-2 mb-md-0">
               Add Member
+            </Button>
+            <Button href="/register" className="custom-button me-2 mb-2 mb-md-0">
+              Add Family
             </Button>
             <Button onClick={handleExport} className="custom-button me-2 mb-2 mb-md-0">
               {isExporting ? <Spinner animation="border" size="sm" /> : "Export Members"}
@@ -308,230 +360,269 @@ const MembersPage = () => {
 </Col>
 
       </Row>
-
       <Table striped bordered hover responsive className="custom-table">
-      <thead>
-          <tr>
-            <th onClick={() => handleSortChange('name')} style={{ cursor: 'pointer' }}>
-              First Name {sortBy === 'name' ? '▲' : sortBy === '-name' ? '▼' : ''}
-            </th>
-            <th onClick={() => handleSortChange('phoneNumber')} style={{ cursor: 'pointer' }}>
-              Phone Number {sortBy === 'phoneNumber' ? '▲' : sortBy === '-phoneNumber' ? '▼' : ''}
-            </th>
-            <th onClick={() => handleSortChange('email')} style={{ cursor: 'pointer' }}>
-              Email {sortBy === 'email' ? '▲' : sortBy === '-email' ? '▼' : ''}
-            </th>
-            <th>Date of Birth</th>
-            <th>Gender</th>
-            <th >
-              Family ID
-            </th>
-            <th onClick={() => handleSortChange('familyName')} style={{ cursor: 'pointer' }}>
-              Family Name {sortBy === 'familyName' ? '▲' : sortBy === '-familyName' ? '▼' : ''}
-            </th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {isLoading ? (
-            <tr>
-              <td colSpan="8" className="text-center">
-                <Spinner animation="border" />
-              </td>
-            </tr>
-          ) : (
-            members.length ? ( members.map((member) => (
-              <tr key={member._id}>
-                <td>{member.name}</td>
-                <td>{member.phoneNumber}</td>
-                <td>{member.email}</td>
-                <td>{member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString('en-CA'): ''}</td>
-                <td>{member.gender}</td>
-                <td>{member.familyId}</td>
-                <td>{member.familyName}</td>
-                <td className="text-center">
-                  {!showDeleted ? <Button
-                    variant="warning"
-                    className="mb-2"
-                    onClick={() => handleEditModal(member)}
-                    disabled={loadingAction[member._id]}
-                  >
-                    {loadingAction[member._id] ? (
-                      <Spinner animation="border" size="sm" />
-                    ) : (
-                      "Edit"
-                    )}
-                  </Button> : <Button
-                    variant="warning"
-                    onClick={() => handleRestore(member._id)}
-                    className="mb-2"
-                    disabled={loadingAction[member._id]}
-                  >
-                    {loadingAction[member._id] ? (
-                      <Spinner animation="border" size="sm" />
-                    ) : (
-                      "Restore"
-                    )}
-                  </Button>}
-                  {!showDeleted ? <Button
-                    variant="danger"
-                    onClick={() => handleDelete(member._id)}
-                     className="ms-2 mb-2"
-                    disabled={loadingAction[member._id]}
-                  >
-                    {loadingAction[member._id] ? (
-                      <Spinner animation="border" size="sm" />
-                    ) : (
-                      "Archive"
-                    )}
-                  </Button> : <Button
-                    variant="danger"
-                    onClick={() => handlePermanentDelete(member._id)}
-                    className="ms-2 mb-2"
-                    disabled={loadingAction[member._id]}
-                  >
-                    {loadingAction[member._id] ? (
-                      <Spinner animation="border" size="sm" />
-                    ) : (
-                      "Permanent Delete"
-                    )}
-                  </Button>}
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="8" className="text-center">
-                No members found
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+  <thead>
+    <tr>
+      <th onClick={() => handleSortChange('name')} style={{ cursor: 'pointer' }}>
+        First Name {sortBy === 'name' ? '▲' : sortBy === '-name' ? '▼' : ''}
+      </th>
+      <th onClick={() => handleSortChange('phoneNumber')} style={{ cursor: 'pointer' }}>
+        Phone Number {sortBy === 'phoneNumber' ? '▲' : sortBy === '-phoneNumber' ? '▼' : ''}
+      </th>
+      <th onClick={() => handleSortChange('email')} style={{ cursor: 'pointer' }}>
+        Email {sortBy === 'email' ? '▲' : sortBy === '-email' ? '▼' : ''}
+      </th>
+      <th>Date of Birth</th>
+      <th>Age</th> {/* New Age column */}
+      <th>Gender</th>
+      <th>Family ID</th>
+      <th onClick={() => handleSortChange('familyName')} style={{ cursor: 'pointer' }}>
+        Family Name {sortBy === 'familyName' ? '▲' : sortBy === '-familyName' ? '▼' : ''}
+      </th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {isLoading ? (
+      <tr>
+        <td colSpan="9" className="text-center">
+          <Spinner animation="border" />
+        </td>
+      </tr>
+    ) : members.length ? (
+      members.map((member) => (
+        <tr key={member._id}>
+          <td>{member.name}</td>
+          <td>{member.phoneNumber}</td>
+          <td>{member.email}</td>
+          <td>{member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString('en-GB') : ''}</td>
+          <td>{calculateAge(member.dateOfBirth)}</td> {/* Display calculated age */}
+          <td>{member.gender}</td>
+          <td>{member.familyId}</td>
+          <td>{member.familyName}</td>
+          <td className="text-center">
+            {!showDeleted ? (
+              <Button
+                variant="warning"
+                className="mb-2"
+                onClick={() => handleEditModal(member)}
+                disabled={loadingAction[member._id]}
+              >
+                {loadingAction[member._id] ? <Spinner animation="border" size="sm" /> : 'Edit'}
+              </Button>
+            ) : (
+              <Button
+                variant="warning"
+                onClick={() => handleRestore(member._id)}
+                className="mb-2"
+                disabled={loadingAction[member._id]}
+              >
+                {loadingAction[member._id] ? <Spinner animation="border" size="sm" /> : 'Restore'}
+              </Button>
+            )}
+            {!showDeleted ? (
+              <Button
+                variant="danger"
+                onClick={() => handleDelete(member._id)}
+                className="ms-2 mb-2"
+                disabled={loadingAction[member._id]}
+              >
+                {loadingAction[member._id] ? <Spinner animation="border" size="sm" /> : 'Archive'}
+              </Button>
+            ) : (
+              <Button
+                variant="danger"
+                onClick={() => handlePermanentDelete(member._id)}
+                className="ms-2 mb-2"
+                disabled={loadingAction[member._id]}
+              >
+                {loadingAction[member._id] ? <Spinner animation="border" size="sm" /> : 'Permanent Delete'}
+              </Button>
+            )}
+          </td>
+        </tr>
+      ))
+    ) : (
+      <tr>
+        <td colSpan="9" className="text-center">
+          No members found
+        </td>
+      </tr>
+    )}
+  </tbody>
+</Table>
 
-      {/* Pagination */}
-      <Pagination className="justify-content-center mt-4 custom-pagination">
-        <Pagination.Prev
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-        />
-        <Pagination.Item active>{currentPage}</Pagination.Item>
-        <Pagination.Next
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={members.length < membersPerPage}
-        />
-      </Pagination>
+<Pagination className="justify-content-center mt-4 custom-pagination">
+  {/* Go to first page */}
+  <Pagination.First onClick={() => handlePageChange(1)} disabled={currentPage === 1} />
+  
+  {/* Go to previous page */}
+  <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
+
+  {/* Display the current page out of total pages */}
+  <span className="mx-3 align-self-center">
+    Page {currentPage} of {totalPages}
+  </span>
+
+  {/* Dropdown to select a specific page */}
+  <Form.Select
+    value={currentPage}
+    onChange={(e) => handlePageChange(Number(e.target.value))}
+    style={{ width: 'auto', display: 'inline-block' }}
+    className="me-3"
+  >
+    {Array.from({ length: totalPages }, (_, index) => (
+      <option key={index + 1} value={index + 1}>
+        {index + 1}
+      </option>
+    ))}
+  </Form.Select>
+
+  {/* Go to next page */}
+  <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
+
+  {/* Go to last page */}
+  <Pagination.Last onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages} />
+</Pagination>
 
       {/* Edit Member Modal */}
       <Modal show={showModal} onHide={handleCloseModal} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit Member</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleEditSubmit}>
-            <Form.Group className="mb-3" controlId="formName">
-              <Form.Label>First Name</Form.Label>
+      <Modal.Header closeButton>
+        <Modal.Title>Edit Member</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form onSubmit={handleEditSubmit}>
+          <Form.Group className="mb-3" controlId="formName">
+            <Form.Label>First Name</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter name"
+              name="name"
+              value={editMember.name}
+              onChange={handleChange}
+              required
+              isInvalid={!!errors.name}
+              className="custom-input"
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.name}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formPhoneNumber">
+            <Form.Label>Phone Number</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter phone number"
+              name="phoneNumber"
+              value={editMember.phoneNumber}
+              onChange={handleChange}
+              required
+              isInvalid={!!errors.phoneNumber}
+              className="custom-input"
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.phoneNumber}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formEmail">
+            <Form.Label>Email</Form.Label>
+            <Form.Control
+              type="email"
+              placeholder="Enter email"
+              name="email"
+              value={editMember.email}
+              onChange={handleChange}
+              required
+              isInvalid={!!errors.email}
+              className="custom-input"
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.email}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group controlId="dateOfBirth" className="mb-3">
+            <Form.Label>Date of Birth</Form.Label>
+            <Form.Control
+              type="date"
+              name="dateOfBirth"
+              value={editMember.dateOfBirth ? new Date(editMember.dateOfBirth).toISOString().split('T')[0] : ''}
+              onChange={handleChange}
+              required
+              isInvalid={!!errors.dateOfBirth}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.dateOfBirth}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group controlId="gender" className="mb-3">
+            <Form.Label>Gender</Form.Label>
+            <Form.Control
+              as="select"
+              name="gender"
+              value={editMember.gender}
+              onChange={handleChange}
+              required
+              isInvalid={!!errors.gender}
+            >
+              <option value="">Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </Form.Control>
+            <Form.Control.Feedback type="invalid">
+              {errors.gender}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formPassword">
+            <Form.Label>Password</Form.Label>
+            <div className="d-flex align-items-center">
               <Form.Control
-                type="text"
-                placeholder="Enter name"
-                name="name"
-                value={editMember.name}
+                type="password"
+                placeholder="Enter new password (leave empty to keep current)"
+                name="password"
+                value={editMember.password}
                 onChange={handleChange}
-                required
-                className="custom-input"
+                className="custom-input me-2"
+                disabled={!isPasswordUnlocked} // Disable input based on state
+                isInvalid={!!errors.password}
               />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formPhoneNumber">
-              <Form.Label>Phone Number</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter phone number"
-                name="phoneNumber"
-                value={editMember.phoneNumber}
-                onChange={handleChange}
-                required
-                className="custom-input"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formEmail">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                placeholder="Enter email"
-                name="email"
-                value={editMember.email}
-                onChange={handleChange}
-                required
-                className="custom-input"
-              />
-            </Form.Group>
-            <Form.Group controlId="dateOfBirth" className="mb-3">
-              <Form.Label>Date of Birth</Form.Label>
-              <Form.Control
-                type="date"
-                name="dateOfBirth"
-                value={editMember.dateOfBirth ? new Date(editMember.dateOfBirth).toISOString().split('T')[0] : ''}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group controlId="gender" className="mb-3">
-              <Form.Label>Gender</Form.Label>
-              <Form.Control
-                as="select"
-                name="gender"
-                value={editMember.gender}
-                onChange={handleChange}
-                required
+              <Button
+                variant={isPasswordUnlocked ? "success" : "outline-secondary"}
+                onClick={handleUnlockPassword}
               >
-                <option value="">Select gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </Form.Control>
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formPassword">
-              <Form.Label>Password</Form.Label>
-              <div className="d-flex align-items-center">
-                <Form.Control
-                  type="password"
-                  placeholder="Enter new password (leave empty to keep current)"
-                  name="password"
-                  value={editMember.password}
-                  onChange={handleChange}
-                  className="custom-input me-2"
-                  disabled={!isPasswordUnlocked} // Disable input based on state
-                />
-                <Button
-                  variant={isPasswordUnlocked ? "success" : "outline-secondary"}
-                  onClick={handleUnlockPassword}
-                >
-                  {isPasswordUnlocked ? <FaLock /> : <FaUnlockAlt />}
-                </Button>
-              </div>
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formFamily">
-              <Form.Label>Family</Form.Label>
-              <Form.Control
-                as="select"
-                name="family"
-                value={editMember.familyId}
-                onChange={handleFamilyChange}
-                required
-                className="custom-select"
-              >
-                {families.map((family) => (
-                  <option key={family.familyId} value={family.familyId}>
-                    {family.familyName} - {family.familyId}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-            <Button variant="primary" type="submit" className="custom-button" disabled={isSaving}>
-              {isSaving ? <Spinner animation="border" size="sm" /> : "Save Changes"}
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
+                {isPasswordUnlocked ? <FaLock /> : <FaUnlockAlt />}
+              </Button>
+            </div>
+            <Form.Control.Feedback type="invalid">
+              {errors.password}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formFamily">
+            <Form.Label>Family</Form.Label>
+            <Form.Control
+              as="select"
+              name="familyId"
+              value={editMember.familyId}
+              onChange={handleFamilyChange}
+              required
+              isInvalid={!!errors.familyId}
+              className="custom-select"
+            >
+              {families.map((family) => (
+                <option key={family.familyId} value={family.familyId}>
+                  {family.familyName} - {family.familyId}
+                </option>
+              ))}
+            </Form.Control>
+            <Form.Control.Feedback type="invalid">
+              {errors.familyId}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Button variant="primary" type="submit" className="custom-button" disabled={isSaving}>
+            {isSaving ? <Spinner animation="border" size="sm" /> : "Save Changes"}
+          </Button>
+        </Form>
+      </Modal.Body>
+    </Modal>
     </Container>
   );
 };

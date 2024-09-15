@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     }
 
     // Find members associated with the found family
-    const members = await Member.find({ family: family._id,deleted:false });
+    const members = await Member.find({ family: family._id});
     res.status(200).json({ family, members });
   } catch (error) {
     console.error('Error fetching members by familyId:', error);

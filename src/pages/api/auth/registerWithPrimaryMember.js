@@ -5,26 +5,24 @@ import Member from '../../../models/Member';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { familyName, name, phoneNumber, email, password, dateOfBirth, gender } = req.body;
+  const { familyId, familyName, name, phoneNumber, email, password, dateOfBirth, gender } = req.body;
 
   await connectToDatabase();
 
   try {
-    // Find the family with the highest familyId
-    const lastFamily = await Family.findOne().sort({ familyId: -1 }).exec();
-    let newFamilyId = 1000; // Start with 1000 if no family exists
-
-    if (lastFamily) {
-      newFamilyId = lastFamily.familyId + 1;
-
-      // Ensure the familyId is a 4-digit number
-      if (newFamilyId > 9999) {
-        return res.status(400).json({ message: 'Family ID limit reached' });
-      }
+    // Check if the familyId is provided and is within the allowed range
+    if (!familyId || familyId < 1000 || familyId > 9999) {
+      return res.status(400).json({ message: 'Invalid family ID. Must be a 4-digit number between 1000 and 9999.' });
     }
 
-    // Check if the phone number already exists
-    const existingMember = await Member.findOne({ phoneNumber,deleted:true  });
+    // Check if the familyId already exists
+    const existingFamily = await Family.findOne({ familyId }).exec();
+    if (existingFamily) {
+      return res.status(400).json({ message: `Family ID ${familyId} is already in use. Please choose a different ID.` });
+    }
+
+    // Check if the phone number already exists (excluding deleted members)
+    const existingMember = await Member.findOne({ phoneNumber, deleted: false });
     if (existingMember) {
       return res.status(400).json({ message: 'Phone number already registered' });
     }
@@ -44,7 +42,7 @@ export default async function handler(req, res) {
 
     // Create the new family
     const newFamily = new Family({
-      familyId: newFamilyId,
+      familyId,  // Use the familyId provided by the user
       familyName,
       members: [primaryMember._id],
       primaryMember: primaryMember._id,

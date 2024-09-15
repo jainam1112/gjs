@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Card, Button, Form, Container, Row, Col } from 'react-bootstrap';
+import { Card, Button, Form, Container, Row, Col, Tooltip, OverlayTrigger } from "react-bootstrap";
 import '../../styles/globals.css';
 import { logoutUser } from "../../middleware/logout"
 // Server-side authentication middleware (assuming it's defined elsewhere)
@@ -33,7 +33,7 @@ const RegisterForm = () => {
   const [families, setFamilies] = useState([]);
   const [errors, setErrors] = useState({});
   const router = useRouter();
-
+  const [loading, setIsLoading] = useState(false);
   useEffect(() => {
     const fetchFamilies = async () => {
       try {
@@ -91,7 +91,14 @@ const RegisterForm = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+  const generateDummyPhoneNumber = async () => {
+    try {
+      const response = await axios.get("/api/utils/generatePhoneNumber");
+      setFormData({ ...formData, phoneNumber: response.data.dummyPhoneNumber });
+    } catch (error) {
+      toast.error("Error generating phone number.");
+    }
+  };
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -157,16 +164,31 @@ const RegisterForm = () => {
                   </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="phoneNumber" className="mb-3">
-                  <Form.Label>Phone Number</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                    placeholder="Enter phone number"
-                    isInvalid={!!errors.phoneNumber}
-                    required
-                  />
+                  <Form.Label>Phone Number/Login Number</Form.Label>
+                  <div className="d-flex">
+                    <Form.Control
+                      type="text"
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
+                      onChange={handleChange}
+                      placeholder="Enter primary member phone number"
+                      isInvalid={!!errors.phoneNumber}
+                      required
+                    />
+                    <OverlayTrigger
+                      placement="right"
+                      overlay={<Tooltip>If you don&apos;t have a phone number, use this to create a unique login number.</Tooltip>}
+                    >
+                      <Button
+                        type="button"
+                        onClick={generateDummyPhoneNumber}
+                        className="custom-secondary-button ms-2 mb-0"
+              
+                      >
+                        Generate Login Number
+                      </Button>
+                    </OverlayTrigger>
+                  </div>
                   <Form.Control.Feedback type="invalid">
                     {errors.phoneNumber}
                   </Form.Control.Feedback>

@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Modal, Button, Container, Table } from 'react-bootstrap';
+import {
+  Table,
+  Button,
+  Modal,
+  Form,
+  Pagination,
+  Container,
+  Row,
+  Col,
+  Spinner,
+  Card
+} from "react-bootstrap";
 import { useRouter } from 'next/router';
 import { authMiddleware } from '../../middleware/auth';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../styles/globals.css';
+import { FaUnlockAlt, FaLock } from 'react-icons/fa';
 import { logoutUser } from "../../middleware/logout"
 export const getServerSideProps = async (ctx) => {
   const authResult = await authMiddleware(ctx);
@@ -32,7 +44,7 @@ const FamilyMembersList = () => {
   const [errors, setErrors] = useState({});
   const router = useRouter();
   const { id } = router.query;
-
+  const [isSaving, setIsSaving] = useState(false); // Loading state for save button
   useEffect(() => {
     if (id) {
       const fetchFamily = async () => {
@@ -50,18 +62,40 @@ const FamilyMembersList = () => {
     }
   }, [id]);
 
-  const validateEditMember = () => {
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhoneNumber = (phoneNumber) => {
+    const phoneRegex = /^[6-9]\d{9}$/; // Indian phone number validation
+    return phoneRegex.test(phoneNumber);
+  };
+
+  const validateForm = () => {
     const newErrors = {};
     if (!editMember.name.trim()) {
       newErrors.name = 'Name is required';
     }
-    const phoneRegex = /^[6-9]\d{9}$/;
-    if (!phoneRegex.test(editMember.phoneNumber)) {
+    if (!validatePhoneNumber(editMember.phoneNumber)) {
       newErrors.phoneNumber = 'Invalid phone number. Must be 10 digits and start with 6-9.';
+    }
+    if (!validateEmail(editMember.email)) {
+      newErrors.email = 'Invalid email address.';
+    }
+    if (!editMember.dateOfBirth.trim()) {
+      newErrors.dateOfBirth = 'Date of birth is required';
+    }
+    if (!editMember.gender.trim()) {
+      newErrors.gender = 'Gender is required';
+    }
+    if (!editMember.familyId) {
+      newErrors.familyId = 'Family selection is required';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
 
   const handleEditModal = (member) => {
     setEditMember(member);
@@ -70,9 +104,10 @@ const FamilyMembersList = () => {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-    if (!validateEditMember()) {
+    if (!validateForm()) {
       return;
     }
+    setIsSaving(true);
     try {
       editMember['memberId'] = editMember._id;
       const response = await axios.put(`/api/member/edit`, editMember);
@@ -84,9 +119,25 @@ const FamilyMembersList = () => {
     } catch (error) {
       toast.error('Error updating member');
       console.error('Error editing member:', error);
+    }finally {
+      setIsSaving(false);
     }
   };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setEditMember((prevEditMember) => ({
+      ...prevEditMember,
+      [name]: value,
+    }));
+  };
 
+  const handleFamilyChange = (e) => {
+    const { name, value } = e.target;
+    setEditMember((prevEditMember) => ({
+      ...prevEditMember,
+      familyId: value,
+    }));
+  };
   const handleDelete = async (memberId) => {
     try {
       await axios.patch(`/api/member/remove`, { memberId });
@@ -150,7 +201,7 @@ const FamilyMembersList = () => {
         </thead>
         <tbody>
           {familyMembers.map(member => (
-            <tr key={member._id} className={family.primaryMember === member._id ? 'primary' : ''}>
+            <tr key={member._id} className={family.primaryMember === member._id ? 'primary' : (member.deleted === true ? 'archived' : '')}>
               <td><strong>{family.familyId}</strong></td>
               <td>{member.name}</td>
               <td>{member.phoneNumber}</td>
@@ -159,7 +210,7 @@ const FamilyMembersList = () => {
               <td>{member.gender}</td>
               <td>
                 <div className="btn-group" role="group">
-                  <Button variant="outline-primary" disabled={family.primaryMember === member._id} size="sm" onClick={() => handleEditModal(member)}>Edit</Button>
+                  <Button variant="outline-primary" disabled={family.primaryMember === member._id || member.deleted === true} size="sm" onClick={() => handleEditModal(member)}>Edit</Button>
                   {/* <Button variant="outline-danger" disabled={family.primaryMember === member._id} size="sm" onClick={() => handleDelete(member._id)}>Delete</Button> */}
                 </div>
               </td>
@@ -169,82 +220,98 @@ const FamilyMembersList = () => {
       </Table>
 
       {/* Edit Member Modal */}
-      <Modal show={showModal} onHide={handleCloseModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit Member</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <form onSubmit={handleEditSubmit}>
-            <div className="mb-3">
-              <label htmlFor="edit-name" className="form-label">Name</label>
-              <input
-                type="text"
-                id="edit-name"
-                className="form-control"
-                value={editMember.name}
-                onChange={(e) => setEditMember({ ...editMember, name: e.target.value })}
-                isInvalid={!!errors.name}
-                required
-              />
-              <div className="invalid-feedback">
-                {errors.name}
-              </div>
-            </div>
-            <div className="mb-3">
-              <label htmlFor="edit-phoneNumber" className="form-label">Phone Number</label>
-              <input
-                type="text"
-                id="edit-phoneNumber"
-                className="form-control"
-                value={editMember.phoneNumber}
-                onChange={(e) => setEditMember({ ...editMember, phoneNumber: e.target.value })}
-                isInvalid={!!errors.phoneNumber}
-                required
-              />
-              <div className="invalid-feedback">
-                {errors.phoneNumber}
-              </div>
-            </div>
-            <div className="mb-3">
-              <label htmlFor="edit-email" className="form-label">Email</label>
-              <input
-                type="email"
-                id="edit-email"
-                className="form-control"
-                value={editMember.email}
-                onChange={(e) => setEditMember({ ...editMember, email: e.target.value })}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="edit-dateOfBirth" className="form-label">Date of Birth</label>
-              <input
-                type="date"
-                id="edit-dateOfBirth"
-                className="form-control"
-                value={editMember.dateOfBirth ? new Date(editMember.dateOfBirth).toISOString().split('T')[0] : ''}
-                onChange={(e) => setEditMember({ ...editMember, dateOfBirth: e.target.value })}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="edit-gender" className="form-label">Gender</label>
-              <select
-                id="edit-gender"
-                className="form-control"
-                value={editMember.gender}
-                onChange={(e) => setEditMember({ ...editMember, gender: e.target.value })}
-                required
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
-            </div>
-            <Button variant="primary" type="submit">Save Changes</Button>
-          </form>
-        </Modal.Body>
-      </Modal>
+      <Modal show={showModal} onHide={handleCloseModal} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Edit Member</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form onSubmit={handleEditSubmit}>
+          <Form.Group className="mb-3" controlId="formName">
+            <Form.Label>First Name</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter name"
+              name="name"
+              value={editMember.name}
+              onChange={handleChange}
+              required
+              isInvalid={!!errors.name}
+              className="custom-input"
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.name}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formPhoneNumber">
+            <Form.Label>Phone Number</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter phone number"
+              name="phoneNumber"
+              value={editMember.phoneNumber}
+              onChange={handleChange}
+              required
+              isInvalid={!!errors.phoneNumber}
+              className="custom-input"
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.phoneNumber}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formEmail">
+            <Form.Label>Email</Form.Label>
+            <Form.Control
+              type="email"
+              placeholder="Enter email"
+              name="email"
+              value={editMember.email}
+              onChange={handleChange}
+              required
+              isInvalid={!!errors.email}
+              className="custom-input"
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.email}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group controlId="dateOfBirth" className="mb-3">
+            <Form.Label>Date of Birth</Form.Label>
+            <Form.Control
+              type="date"
+              name="dateOfBirth"
+              value={editMember.dateOfBirth ? new Date(editMember.dateOfBirth).toISOString().split('T')[0] : ''}
+              onChange={handleChange}
+              required
+              isInvalid={!!errors.dateOfBirth}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.dateOfBirth}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group controlId="gender" className="mb-3">
+            <Form.Label>Gender</Form.Label>
+            <Form.Control
+              as="select"
+              name="gender"
+              value={editMember.gender}
+              onChange={handleChange}
+              required
+              isInvalid={!!errors.gender}
+            >
+              <option value="">Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </Form.Control>
+            <Form.Control.Feedback type="invalid">
+              {errors.gender}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Button variant="primary" type="submit" className="custom-button" disabled={isSaving}>
+            {isSaving ? <Spinner animation="border" size="sm" /> : "Save Changes"}
+          </Button>
+        </Form>
+      </Modal.Body>
+    </Modal>
     </Container>
   );
 };
