@@ -47,6 +47,11 @@ body {
   border-color: #977040;
   color: white;
 }
+.custom-secondary-button:disabled{
+  background-color: #a28f76!important;
+  border-color: #977040!important;
+  color: white!important;
+}
 .custom-button:focus-visible{
   background-color: transparent!important;
   border-color: #582626!important;
@@ -132,12 +137,14 @@ body {
   border-radius: 0.25rem;
   border-color: #ced4da;
 }
-.primary td{
-  background-color: #5826266b;
+.primary td {
+  background-color: #e5a848;
+  color: #582626;
 }
-.archived td{
-  background-color: #582626ad;
-  color: rgba(255, 255, 255, 0.427);
+
+.archived td {
+  background-color: #898989ab;
+  color: #5e5e5e;
 }
 .primary .btn:disabled{
   color: #ced4da;

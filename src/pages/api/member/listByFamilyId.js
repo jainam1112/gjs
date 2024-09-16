@@ -16,8 +16,10 @@ export default async function handler(req, res) {
       return res.status(404).json({ message: 'Family not found' });
     }
 
-    // Find members associated with the found family
-    const members = await Member.find({ family: family._id});
+    // Find members associated with the found family and sort by isDeleted field
+    const members = await Member.find({ family: family._id }).sort({ deleted: 1 }); 
+    // This will place members with isDeleted: false before isDeleted: true
+
     res.status(200).json({ family, members });
   } catch (error) {
     console.error('Error fetching members by familyId:', error);

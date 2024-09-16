@@ -29,10 +29,10 @@ const RegisterFamilyAndMemberForm = () => {
   };
 
   const generateFamilyId = async () => {
-    if (!formData.familyName) return; // Only generate if familyName is provided
+    if (!formData.name) return; // Only generate if familyName is provided
     try {
       const response = await axios.post("/api/utils/generateFamilyId", {
-        familyName: formData.familyName,
+        familyName: formData.name,
       });
       setFormData({ ...formData, familyId: response.data.familyId });
     } catch (error) {
@@ -152,13 +152,13 @@ const RegisterFamilyAndMemberForm = () => {
                     />
                      <OverlayTrigger
                       placement="right"
-                      overlay={<Tooltip>Will be enabled only after FamilyName is enetered</Tooltip>}
+                      overlay={<Tooltip>Will be enabled only after Primary Name is entered</Tooltip>}
                     >
                     <Button
                       type="button"
                       onClick={generateFamilyId}
                       
-                      disabled={!formData.familyName || loading}
+                      disabled={!formData.name || loading}
                       className="custom-secondary-button ms-2 mb-0"
                     >
                       AutoGenerate

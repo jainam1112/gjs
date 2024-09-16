@@ -183,7 +183,7 @@ const FamilyMembersList = () => {
       <h2 className="title d-md-none">Family Members List</h2>
       {family && (
         <div className="mb-3">
-          <h4>Family (Surname): {family.familyName}</h4>
+          <h4>Family: {family.familyName}</h4>
           <p><strong>Family ID:</strong> {family.familyId}</p>
         </div>
       )}

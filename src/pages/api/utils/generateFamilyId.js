@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
   try {
     if (!familyName || typeof familyName !== 'string') {
-      return res.status(400).json({ message: 'Invalid family name provided.' });
+      return res.status(400).json({ message: 'Invalid Primary name provided.' });
     }
 
     // Extract the first letter of the family name (capitalized)
