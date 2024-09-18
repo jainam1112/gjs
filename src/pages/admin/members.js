@@ -20,7 +20,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../../styles/globals.css";
 import { logoutUser } from "../../middleware/logout";
 import { FaUnlockAlt, FaLock } from 'react-icons/fa';
-
+import Link from 'next/link';
 export const getServerSideProps = async (ctx) => {
   const authResult = await adminMiddleware(ctx);
   if (authResult.redirect) return authResult;
@@ -55,6 +55,7 @@ const MembersPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [membersPerPage] = useState(10);
   const [totalMembers,setTotalMembers] = useState(10);
+  const [totalFamilies,setTotalFamilies] = useState(1);
   const [isPasswordUnlocked, setIsPasswordUnlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // General loading state
   const [isExporting, setIsExporting] = useState(false); // Loading state for export
@@ -88,6 +89,7 @@ const MembersPage = () => {
       }));
       setMembers(membersData);
       setTotalMembers(response.data.totalMembers)
+      setTotalFamilies(response.data.totalFamilies)
     } catch (error) {
       toast.error("Error fetching members.");
     } finally {
@@ -319,9 +321,11 @@ const MembersPage = () => {
             <Button href="addMember" className="custom-button me-2 mb-2 mb-md-0">
               Add Member
             </Button>
-            <Button href="/register" className="custom-button me-2 mb-2 mb-md-0">
-              Add Family
-            </Button>
+            <Link href={{ pathname: '/register', query: { returnback: '/admin/members' } }} passHref>
+  <Button className="custom-button me-2 mb-2 mb-md-0">
+    Add Family
+  </Button>
+</Link>
             <Button onClick={handleExport} className="custom-button me-2 mb-2 mb-md-0">
               {isExporting ? <Spinner animation="border" size="sm" /> : "Export Members"}
             </Button>
@@ -346,7 +350,7 @@ const MembersPage = () => {
               value={searchQuery}
               onChange={handleSearchChange}
               onKeyPress={handleKeyPress} // Trigger search on Enter
-              className="me-2 custom-input w-100 mb-2 mb-md-0"
+              className="me-2 custom-input w-100 mb-md-0"
               style={{ maxWidth: "300px" }}
             />
             <Button onClick={handleSearch} className="custom-button w-100 w-md-auto mb-0">
@@ -355,11 +359,21 @@ const MembersPage = () => {
           </div>
         </Col>
       </Row>
+      <Row className="d-flex justify-content-between align-items-center">
+        <Col xs={12} md={12} className="mt-3">
+        <div className="d-flex ">
+          <h4 className="sub-title mb-0">Total Families: {totalFamilies } <span className="d-md-inline-flex d-none">|</span> <span className="text-nowrap">Total Members: {totalMembers }</span></h4> 
+          
+        </div>
+        </Col>
+        </Row>
     </Card.Body>
   </Card>
 </Col>
 
       </Row>
+   
+
       <Table striped bordered hover responsive className="custom-table">
   <thead>
     <tr>

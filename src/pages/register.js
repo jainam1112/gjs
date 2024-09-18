@@ -23,7 +23,8 @@ const RegisterFamilyAndMemberForm = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
+  const { returnback } = router.query;
+  
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -122,7 +123,7 @@ const RegisterFamilyAndMemberForm = () => {
             </div>
             <h2 className="title d-none d-md-block">Register New Family</h2>
             <div className="d-flex justify-content-flex-end">
-              <Link href="/">
+              <Link href={returnback === undefined ? '/' : returnback}>
                 <Button variant="primary" className="custom-button ms-5 my-0 px-3">Back</Button>
               </Link>
             </div>

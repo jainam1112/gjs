@@ -60,6 +60,9 @@ export default async function handler(req, res) {
       .limit(parseInt(limit))
       .exec();
 
+    // Get total count of families
+    const totalFamilies = await Family.countDocuments(); // This will return the total number of families
+
     // Populate family details and sort by family fields if needed
     if (['familyId', 'familyName'].includes(sortBy)) {
       const membersWithFamily = await Promise.all(members.map(async (member) => {
@@ -75,9 +78,9 @@ export default async function handler(req, res) {
         }
         return 0;
       });
-      res.status(200).json({ members: membersWithFamily, totalMembers });
+      res.status(200).json({ members: membersWithFamily, totalMembers, totalFamilies });
     } else {
-      res.status(200).json({ members, totalMembers });
+      res.status(200).json({ members, totalMembers, totalFamilies });
     }
   } catch (error) {
     console.error('Error fetching members:', error);
