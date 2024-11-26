@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import Family from '../models/Family';
+import Family from '../models/Family.js';
 const MemberSchema = new mongoose.Schema({
   name: {
     type: String,

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "migrate": "node migrations/setupDatabase.js"
+    "migrate": "node src/migrations/setupDatabase.mjs"
   },
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.0-alpha3",
